@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OrangeFIN ASV Bank · Automated Signature Verification</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/theme.css">
+</head>
+<body data-page="home">
+<section class="hero"><div class="wrap">
+  <div>
+    <span class="eyebrow" style="color:var(--orange-500)">Automated Signature Verification</span>
+    <h1>Stop forged signatures <span>before</span> the money moves.</h1>
+    <p class="lead">ASV reads the signature on a scanned bank instruction, compares it with the verified specimen of the right authorised signatory, and routes anything doubtful to a human reviewer.</p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="payment.html">Try the pilot: Corporate Payment</a>
+      <a class="btn btn-outline" href="how-it-works.html">How ASV works</a>
+    </div>
+  </div>
+  <div class="hero-panel">
+    <div class="small" style="color:#b9c8e4;font-weight:700;letter-spacing:.08em;text-transform:uppercase">Live demo snapshot</div>
+    <div class="stat-row" id="stats"></div>
+    <div style="margin-top:18px;display:grid;gap:8px" id="recent"></div>
+  </div>
+</div></section>
+
+<section class="block"><div class="wrap">
+  <span class="eyebrow">Three high-priority use cases</span>
+  <h2>Where a mismatched signature costs the most</h2>
+  <p class="muted" style="max-width:720px">Each use case has its own workflow, forms and signing rules. All three share the same engine: receive, extract, compare, route.</p>
+  <div class="grid g3" style="margin-top:26px">
+    <div class="card uc-card"><span class="pill orange" style="align-self:flex-start">Recommended pilot</span>
+      <div class="uc-icon"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20M6 15h4"/></svg></div>
+      <h3>Corporate Payment Authorization</h3><p class="muted" style="margin:0">Confirm an authorised company signatory approved the payment.</p>
+      <ul><li>Mandate rule such as &ldquo;any 2 of 3&rdquo;</li><li>Matches each signature to the right signatory</li><li>Risk: unauthorised company payment</li></ul>
+      <a class="btn btn-primary" href="payment.html">Open workflow &rarr;</a></div>
+    <div class="card uc-card">
+      <div class="uc-icon"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M3 10l9-6 9 6M5 10v9M19 10v9M9 10v9M15 10v9M3 21h18"/></svg></div>
+      <h3>Fixed Deposit Upliftment</h3><p class="muted" style="margin:0">Verify the depositor before early withdrawal or rollover.</p>
+      <ul><li>Sole or joint account mandate</li><li>Single or double signature</li><li>Risk: fraudulent withdrawal</li></ul>
+      <a class="btn btn-dark" href="fixed-deposit.html">Open workflow &rarr;</a></div>
+    <div class="card uc-card">
+      <div class="uc-icon"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg></div>
+      <h3>TT / Remittance</h3><p class="muted" style="margin:0">Verify the signature on domestic or cross-border transfer instructions.</p>
+      <ul><li>Any currency and destination</li><li>Corporate multi-signatory rules</li><li>Risk: fraudulent fund transfer</li></ul>
+      <a class="btn btn-dark" href="remittance.html">Open workflow &rarr;</a></div>
+  </div>
+</div></section>
+
+<section class="block dark"><div class="wrap">
+  <span class="eyebrow">The shared pipeline</span>
+  <h2>Four steps, one human decision</h2>
+  <div class="grid g4" style="margin-top:24px">
+    <div class="card" style="background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.14);box-shadow:none"><div class="eyebrow">01 Receive</div><h3>Scan the signed form</h3><p class="small" style="color:#b9c8e4;margin:0">Payment form, FD upliftment or transfer instruction.</p></div>
+    <div class="card" style="background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.14);box-shadow:none"><div class="eyebrow">02 Extract</div><h3>Crop the signature</h3><p class="small" style="color:#b9c8e4;margin:0">Overlap or poor capture is flagged, not guessed.</p></div>
+    <div class="card" style="background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.14);box-shadow:none"><div class="eyebrow">03 Compare</div><h3>Match to the specimen</h3><p class="small" style="color:#b9c8e4;margin:0">Against the signatory required by the mandate.</p></div>
+    <div class="card" style="background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.14);box-shadow:none"><div class="eyebrow">04 Route</div><h3>Staff decides</h3><p class="small" style="color:#b9c8e4;margin:0">Approve, recheck manually or reject. Every action is logged.</p></div>
+  </div>
+</div></section>
+
+<section class="block"><div class="wrap">
+  <div class="card" style="display:flex;gap:24px;align-items:center;justify-content:space-between;flex-wrap:wrap">
+    <div style="max-width:720px"><h3>ASV supports the bank. It does not replace it.</h3>
+    <p class="muted" style="margin:0">A low score does not prove forgery and a high score does not authorise a payment. ASV flags what needs a closer look so staff spend their time on the cases that matter.</p></div>
+    <a class="btn btn-primary" href="how-it-works.html">Read the details</a>
+  </div>
+</div></section>
+
+<script src="js/shell.js"></script><script src="js/store.js"></script>
+<script>
+  const all = Store.all(), n = all.length, flagged = all.filter(c => c.verdict !== "pass").length;
+  const names = { payment: "Corporate Payment", fd: "Fixed Deposit", tt: "TT / Remittance" };
+  document.getElementById("stats").innerHTML =
+    '<div class="stat"><b>' + n + '</b><span>Cases verified</span></div><div class="stat"><b>' + flagged + '</b><span>Flagged for review</span></div><div class="stat"><b>3</b><span>Use cases</span></div>';
+  document.getElementById("recent").innerHTML = all.slice(0, 3).map(c =>
+    '<div style="display:flex;justify-content:space-between;gap:10px;font-size:.85rem;padding:9px 12px;border-radius:10px;background:rgba(255,255,255,.07)"><span>' + esc(names[c.useCase]) + " &middot; " + esc(c.entity) +
+    '</span><span class="pill ' + (c.verdict === "pass" ? "pass" : c.verdict === "review" ? "review" : "fail") + '">' + (c.verdict === "pass" ? "Match" : c.verdict === "review" ? "Flagged" : "Mandate") + "</span></div>").join("");
+</script>
+</body></html>

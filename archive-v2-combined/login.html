@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sign in | OrangeFIN ASV Bank</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/console.css"><link rel="stylesheet" href="css/sheet.css">
+</head>
+<body>
+<div class="signin">
+  <section class="art" aria-hidden="false">
+    <a class="brand" href="login.html"><i>O</i><span>OrangeFIN<small>ASV Bank</small></span></a>
+    <div>
+      <div class="specimen" aria-hidden="true">
+        <div class="t"><span>Specimen signature card</span><span>Acct 8001-2345-6789</span></div>
+        <img id="spec" alt="">
+        <div class="s">Tan Wei Ming, Director. Verified 19 Feb 2024.</div>
+      </div>
+      <h2>Signature checks for instructions that move money.</h2>
+      <p>Payments, fixed deposit upliftments and telegraphic transfers are compared with the specimen on file, then released only after a second person approves.</p>
+    </div>
+    <div class="small" style="color:#8d9aa4">Authorised staff only. Sign-ins and actions are recorded.</div>
+  </section>
+
+  <section class="formside">
+    <h1>Sign in</h1>
+    <p class="muted" style="margin:0 0 18px">Use your staff ID and password.</p>
+    <div id="note"></div>
+    <form id="f" novalidate>
+      <div style="margin-bottom:12px"><label class="f" for="uid">Staff ID</label><input id="uid" type="text" autocomplete="username" autocapitalize="characters" spellcheck="false"></div>
+      <div style="margin-bottom:14px"><label class="f" for="pw">Password</label><input id="pw" type="password" autocomplete="current-password"></div>
+      <button class="btn primary" style="width:100%;justify-content:center;height:34px" type="submit">Sign in</button>
+    </form>
+
+    <details class="demo" id="demo">
+      <summary>Demonstration accounts</summary>
+      <div class="body" style="padding:10px 12px;font-size:12px;color:var(--muted)">For presenters only. A live system would not list accounts. Choose a row to fill the ID. Password for all: <b style="color:var(--text)">Orange@2026</b></div>
+      <table id="acc"></table>
+      <div style="padding:8px 12px;border-top:1px solid var(--line-soft);font-size:12px"><a href="#" id="reset">Reset demo data and unlock accounts</a></div>
+    </details>
+  </section>
+</div>
+
+<script src="js/sigsynth.js"></script>
+<script src="js/app/data.js"></script><script src="js/app/rules.js"></script><script src="js/app/seed.js"></script><script src="js/app/db.js"></script><script src="js/app/auth.js"></script>
+<script>
+  (function () {
+    var A = APP, q = new URLSearchParams(location.search);
+    DB.ensureSeeded();
+    if (Auth.current()) { location.replace("dashboard.html"); return; }
+
+    var c = document.createElement("canvas"); c.width = 440; c.height = 220; var x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, 440, 220);
+    x.fillStyle = "#1b2f7a"; SigSynth.drawSignature(x, 11, 0, 1, 40, 40, 1); document.getElementById("spec").src = c.toDataURL("image/png");
+
+    var note = document.getElementById("note");
+    if (q.get("out") === "1") note.innerHTML = '<div class="msg ok" role="status">You have signed out.</div>';
+    if (q.get("out") === "timeout") note.innerHTML = '<div class="msg warn" role="status">Your session ended after ' + A.POLICY.sessionMinutes + ' minutes of inactivity. Sign in again to continue.</div>';
+
+    var tbl = document.getElementById("acc");
+    tbl.innerHTML = A.USERS.map(function (u) { return '<tr class="pick" data-id="' + u.id + '"><td><b>' + u.id + "</b></td><td>" + UIesc(u.name) + '</td><td class="muted">' + A.ROLES[u.role].title + "</td></tr>"; }).join("");
+    function UIesc(s) { return String(s).replace(/[&<>"]/g, function (m) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[m]; }); }
+    tbl.addEventListener("click", function (e) { var r = e.target.closest("tr.pick"); if (r) { document.getElementById("uid").value = r.dataset.id; document.getElementById("pw").value = A.PASSWORD; document.getElementById("pw").focus(); } });
+    document.getElementById("reset").onclick = function (e) { e.preventDefault(); DB.reset(); Auth.clearLocks(); note.innerHTML = '<div class="msg ok" role="status">Demo data restored and accounts unlocked.</div>'; };
+    if (q.get("demo") === "1") document.getElementById("demo").open = true;
+
+    document.getElementById("f").addEventListener("submit", function (e) {
+      e.preventDefault();
+      var r = Auth.login(document.getElementById("uid").value, document.getElementById("pw").value);
+      if (!r.ok) { note.innerHTML = '<div class="msg err" role="alert">' + UIesc(r.error) + "</div>"; document.getElementById("pw").value = ""; document.getElementById("pw").focus(); return; }
+      var next = q.get("next"); // only same-folder pages are accepted
+      location.replace(next && /^[a-z0-9-]+\.html(\?[^#]*)?$/i.test(next) && next.indexOf("login.html") !== 0 ? next : "dashboard.html");
+    });
+    document.getElementById("uid").focus();
+  })();
+</script>
+</body>
+</html>

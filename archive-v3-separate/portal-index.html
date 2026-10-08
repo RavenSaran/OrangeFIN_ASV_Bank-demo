@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Signature verification | OrangeFIN ASV Bank</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root { --graphite: #17222d; --graphite-2: #243340; --canvas: #e7eae7; --panel: #fff; --line: #c9cfcc; --soft: #e2e6e3; --text: #1b2630; --muted: #5a6670; --faint: #8a949b; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { font: 400 14px/1.5 "IBM Plex Sans", "Segoe UI", system-ui, Arial, sans-serif; color: var(--text); background: var(--canvas); -webkit-font-smoothing: antialiased; }
+  a { color: inherit; }
+  :focus-visible { outline: 2px solid #c44a05; outline-offset: 2px; }
+
+  .bar { background: var(--graphite); color: #d6dde1; height: 46px; display: flex; align-items: center; padding: 0 28px; gap: 10px; }
+  .bar .mark { width: 22px; height: 22px; background: #c44a05; display: grid; place-items: center; color: #fff; font-weight: 600; font-size: 13px; }
+  .bar b { color: #fff; font-weight: 600; } .bar small { color: #93a1ab; margin-left: 4px; }
+  .bar .r { margin-left: auto; font-size: 12px; color: #93a1ab; }
+
+  main { max-width: 1080px; margin: 0 auto; padding: 40px 28px 56px; }
+  h1 { font: 600 28px/1.25 "IBM Plex Serif", Georgia, serif; margin: 0 0 8px; letter-spacing: -.005em; }
+  .lead { color: var(--muted); max-width: 640px; margin: 0 0 30px; }
+  h2 { font-size: 15px; font-weight: 600; margin: 0 0 10px; }
+
+  .entries { display: grid; gap: 14px; margin-bottom: 38px; }
+  .entry { position: relative; display: grid; grid-template-columns: 8px minmax(0, 1fr) 250px auto; gap: 0 24px; align-items: center; background: var(--panel); border: 1px solid var(--line); transition: border-color .15s, box-shadow .15s; }
+  .entry:hover { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .entry:focus-within { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .entry .edge { align-self: stretch; background: var(--accent); }
+  .entry .body { padding: 20px 0; }
+  .entry h3 { font-size: 18px; font-weight: 600; margin: 0 0 2px; }
+  .entry h3 a { text-decoration: none; }
+  .entry h3 a::after { content: ""; position: absolute; inset: 0; }   /* the whole entry is the link */
+  .entry p { margin: 0 0 12px; color: var(--muted); max-width: 520px; }
+  .facts { display: flex; flex-wrap: wrap; gap: 6px 22px; margin: 0; padding: 0; list-style: none; font-size: 12.5px; }
+  .facts li span { color: var(--faint); margin-right: 5px; }
+  .spec { pointer-events: none; height: 118px; margin: 14px 0; border: 1px solid #ddd5ba; background-color: #fffdf5; position: relative;
+    background-image: linear-gradient(to right, transparent 26px, #e3b6a8 26px, #e3b6a8 27px, transparent 27px), repeating-linear-gradient(to bottom, transparent 0 24px, #e9e4d0 24px 25px); }
+  .spec canvas { position: absolute; left: 30px; right: 4px; top: 0; bottom: 0; width: calc(100% - 34px); height: 100%; }
+  .spec small { position: absolute; right: 6px; top: 4px; font: 11px "IBM Plex Serif", Georgia, serif; color: #8a8466; }
+  .go { position: relative; z-index: 2; display: flex; flex-direction: column; gap: 8px; padding-right: 22px; align-items: stretch; min-width: 150px; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; height: 34px; padding: 0 16px; font: 600 13px "IBM Plex Sans", sans-serif; text-decoration: none; border: 1px solid var(--line); background: #fff; color: var(--text); border-radius: 3px; }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; pointer-events: none; }   /* the entry itself is the link; this is its visible label */
+  .entry:hover .btn.primary { filter: brightness(.92); }
+  .btn.sec:hover { border-color: #8a9591; }
+
+  .panel { background: var(--panel); border: 1px solid var(--line); margin-bottom: 22px; }
+  .panel > header { padding: 9px 14px; background: #f6f7f6; border-bottom: 1px solid var(--line); font-weight: 600; }
+  .steps { display: grid; grid-template-columns: repeat(5, 1fr); }
+  .steps div { padding: 14px 16px; border-right: 1px solid var(--soft); } .steps div:last-child { border-right: 0; }
+  .steps b { display: block; margin-bottom: 2px; } .steps span { font-size: 12.5px; color: var(--muted); }
+  .steps .asv { background: #fbf3ec; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 9px 14px; border-bottom: 1px solid var(--soft); vertical-align: top; }
+  th { font-weight: 600; color: var(--muted); background: #f6f7f6; white-space: nowrap; }
+  tr:last-child td { border-bottom: 0; } td:first-child { color: var(--muted); width: 150px; }
+  th .dot { display: inline-block; width: 9px; height: 9px; margin-right: 6px; }
+  footer { font-size: 12px; color: var(--faint); margin-top: 6px; }
+
+  @media (max-width: 880px) {
+    .entry { grid-template-columns: 8px 1fr; } .entry .spec { display: none; }
+    .go { grid-column: 2; padding: 0 16px 18px 0; flex-direction: row; } .entry .body { padding: 16px 16px 8px 0; }
+    .steps { grid-template-columns: 1fr; } .steps div { border-right: 0; border-bottom: 1px solid var(--soft); }
+    .scroll { overflow-x: auto; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="bar"><span class="mark">O</span><b>OrangeFIN</b><small>ASV Bank</small><span class="r">Demonstration with sample data</span></div>
+
+<main>
+  <h1>Signature verification</h1>
+  <p class="lead">Choose the area you want to work in. Each one is a complete system with its own staff, screens and sample documents.</p>
+
+  <div class="entries">
+    <article class="entry" style="--accent:#c44a05">
+      <div class="edge"></div>
+      <div class="body">
+        <h3><a href="corporate-payment/login.html">Corporate payment authorisation</a></h3>
+        <p>Company payment instructions, checked against the company's signing mandate before the money is released.</p>
+        <ul class="facts"><li><span>Main risk</span>Unauthorised company payment</li><li><span>Approval</span>3 levels</li><li><span>Specific</span>Signing mandates, duplicate check</li></ul>
+      </div>
+      <div class="spec" aria-hidden="true"><canvas data-seed="11"></canvas><small>Specimen on file</small></div>
+      <div class="go"><span class="btn primary">Enter</span><a class="btn sec" href="corporate-payment/login.html?next=flow.html">See the process</a></div>
+    </article>
+
+    <article class="entry" style="--accent:#0d6b63">
+      <div class="edge"></div>
+      <div class="body">
+        <h3><a href="fixed-deposit/login.html">Fixed deposit upliftment</a></h3>
+        <p>Customer requests at the counter to withdraw or renew a deposit, checked against the holders' signatures.</p>
+        <ul class="facts"><li><span>Main risk</span>Fraudulent withdrawal</li><li><span>Approval</span>2 levels</li><li><span>Specific</span>ID check, joint accounts, payout estimate</li></ul>
+      </div>
+      <div class="spec" aria-hidden="true"><canvas data-seed="52"></canvas><small>Specimen on file</small></div>
+      <div class="go"><span class="btn primary">Enter</span><a class="btn sec" href="fixed-deposit/login.html?next=flow.html">See the process</a></div>
+    </article>
+
+    <article class="entry" style="--accent:#2a4d94">
+      <div class="edge"></div>
+      <div class="body">
+        <h3><a href="tt-remittance/login.html">Telegraphic transfer and remittance</a></h3>
+        <p>Cross-border transfer applications, with the beneficiary screened alongside the signature check.</p>
+        <ul class="facts"><li><span>Main risk</span>Fraudulent fund transfer</li><li><span>Approval</span>3 levels</li><li><span>Specific</span>BIC check, screening, same-day cut-off</li></ul>
+      </div>
+      <div class="spec" aria-hidden="true"><canvas data-seed="81"></canvas><small>Specimen on file</small></div>
+      <div class="go"><span class="btn primary">Enter</span><a class="btn sec" href="tt-remittance/login.html?next=flow.html">See the process</a></div>
+    </article>
+  </div>
+
+  <section class="panel" aria-label="The shared steps">
+    <header>The same five steps in every area</header>
+    <div class="steps">
+      <div><b>1 Receive</b><span>A staff member registers the signed instruction.</span></div>
+      <div class="asv"><b>2 Extract</b><span>ASV finds each signature on the scan.</span></div>
+      <div class="asv"><b>3 Compare</b><span>ASV checks each one against the specimen on file.</span></div>
+      <div><b>4 Review</b><span>Anything doubtful goes to an analyst first.</span></div>
+      <div><b>5 Approve</b><span>A second person approves. Never the one who registered it.</span></div>
+    </div>
+  </section>
+
+  <section class="panel scroll" aria-label="Comparison">
+    <header>How the three areas differ</header>
+    <table>
+      <thead><tr><th></th><th><span class="dot" style="background:#c44a05"></span>Corporate payment</th><th><span class="dot" style="background:#0d6b63"></span>Fixed deposit</th><th><span class="dot" style="background:#2a4d94"></span>TT and remittance</th></tr></thead>
+      <tbody>
+        <tr><td>Who asks</td><td>A company</td><td>A customer at the counter</td><td>A company, sending abroad</td></tr>
+        <tr><td>Signatures needed</td><td>Set by the mandate: any 2 of 3, both directors, or one up to a limit</td><td>Set by the account: both holders or either</td><td>Set by the mandate, as for payments</td></tr>
+        <tr><td>Extra check</td><td>Duplicate payment</td><td>Identity sighted, payout worked out, minimum balance</td><td>BIC validation, beneficiary screening, cut-off time</td></tr>
+        <tr><td>Approval levels</td><td>3: up to MYR 100,000, up to 1 million, above</td><td>2: up to MYR 100,000, above</td><td>3: up to MYR 200,000, up to 2 million, above</td></tr>
+        <tr><td>What comes out</td><td>Payment released with a reference</td><td>Payout credited or deposit renewed</td><td>Transfer released with a reference and value date</td></tr>
+      </tbody>
+    </table>
+  </section>
+  <footer>Demonstration only. Scores come from a demonstration engine. Earlier versions are kept in archive-v1 and archive-v2-combined.</footer>
+</main>
+
+<script src="corporate-payment/js/sigsynth.js"></script>
+<script>
+  // Draw each specimen from its seed, so every area has its own signature.
+  document.querySelectorAll("canvas[data-seed]").forEach(function (c) {
+    var dpr = window.devicePixelRatio || 1, r = c.getBoundingClientRect(), w = 440, h = 160;
+    c.width = w; c.height = h; var x = c.getContext("2d");
+    x.fillStyle = "#1b2f7a"; SigSynth.drawSignature(x, +c.dataset.seed, 0, 1, 20, 10, 0.95, "#1b2f7a");
+  });
+</script>
+</body>
+</html>

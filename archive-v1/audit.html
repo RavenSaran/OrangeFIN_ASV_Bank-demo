@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Audit Log · OrangeFIN ASV Bank</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/theme.css"><link rel="stylesheet" href="css/workflow.css">
+</head>
+<body data-page="audit">
+<div class="wf-head"><div class="wrap"><div class="crumbs"><a href="index.html">Overview</a> / Audit log</div><h1>Verification audit log</h1>
+<p>Every ASV result and staff decision. Cases you complete in the three workflows appear here instantly; the first six rows are sample history.</p></div></div>
+<main class="wrap" style="padding-top:26px">
+  <div class="grid g4" id="kpis" style="margin-bottom:22px"></div>
+  <div class="card">
+    <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:space-between;margin-bottom:14px">
+      <div style="display:flex;gap:10px"><select id="fu" style="width:200px"><option value="">All use cases</option><option value="payment">Corporate Payment</option><option value="fd">Fixed Deposit</option><option value="tt">TT / Remittance</option></select>
+      <select id="fv" style="width:190px"><option value="">All ASV results</option><option value="pass">Likely match</option><option value="review">Flagged for review</option><option value="mandate">Mandate not met</option></select></div>
+      <button class="btn btn-outline btn-sm" id="reset">Reset demo history</button>
+    </div>
+    <div style="overflow-x:auto"><table class="t"><thead><tr><th>Case</th><th>Time</th><th>Use case</th><th>Account</th><th>Amount</th><th>Scores</th><th>ASV result</th><th>Staff decision</th><th>Note</th></tr></thead><tbody id="rows"></tbody></table></div>
+  </div>
+</main>
+<script src="js/shell.js"></script><script src="js/store.js"></script>
+<script>
+  const UC = { payment: "Corporate Payment", fd: "Fixed Deposit", tt: "TT / Remittance" };
+  const VR = { pass: ["pass", "Likely match"], review: ["review", "Flagged"], mandate: ["fail", "Mandate not met"] };
+  const DC = { approved: ["pass", "Approved"], recheck: ["review", "Recheck manually"], rejected: ["fail", "Rejected"] };
+  function draw() {
+    const u = document.getElementById("fu").value, v = document.getElementById("fv").value;
+    const all = Store.all(), rows = all.filter(c => (!u || c.useCase === u) && (!v || c.verdict === v));
+    const cnt = (k, val) => all.filter(c => c[k] === val).length;
+    document.getElementById("kpis").innerHTML = [["Total cases", all.length], ["Likely match", cnt("verdict", "pass")], ["Flagged / mandate", all.length - cnt("verdict", "pass")], ["Rejected", cnt("decision", "rejected")]]
+      .map(k => '<div class="card"><div class="muted small">' + k[0] + '</div><div style="font-size:2rem;font-weight:800;color:var(--navy-800)">' + k[1] + "</div></div>").join("");
+    document.getElementById("rows").innerHTML = rows.length ? rows.map(c => {
+      const a = VR[c.verdict], d = DC[c.decision], t = new Date(c.ts);
+      return "<tr><td><b>" + esc(c.id) + (c.seed ? "" : ' <span class="pill orange">New</span>') + "</b></td><td class=\"small\">" + t.toLocaleDateString("en-GB", { day: "2-digit", month: "short" }) + " " + t.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }) +
+        "</td><td>" + esc(UC[c.useCase]) + "</td><td>" + esc(c.entity) + "</td><td>" + esc(fmtMoney(c.amount, c.currency)) + "</td><td>" + c.scores.join(" / ") + '</td><td><span class="pill ' + a[0] + '">' + a[1] + '</span></td><td><span class="pill ' + d[0] + '">' + d[1] + '</span></td><td class="small muted" style="max-width:240px">' + esc(c.note || "-") + "</td></tr>";
+    }).join("") : '<tr><td colspan="9" class="muted" style="text-align:center;padding:30px">No cases match these filters.</td></tr>';
+  }
+  document.getElementById("fu").onchange = draw; document.getElementById("fv").onchange = draw;
+  document.getElementById("reset").onclick = () => { Store.reset(); draw(); };
+  draw();
+</script>
+</body></html>

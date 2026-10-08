@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>How ASV Works · OrangeFIN ASV Bank</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/theme.css"><link rel="stylesheet" href="css/workflow.css">
+<style>
+  .flow { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; margin: 26px 0 8px; }
+  .fl { position: relative; padding: 18px 16px 18px 18px; background: #fff; border: 1px solid var(--line); border-right: 0; }
+  .fl:first-child { border-radius: 14px 0 0 14px; } .fl:last-child { border-right: 1px solid var(--line); border-radius: 0 14px 14px 0; }
+  .fl .n { width: 30px; height: 30px; border-radius: 50%; background: var(--orange-500); color: #fff; display: grid; place-items: center; font-weight: 800; margin-bottom: 10px; }
+  .fl h4 { margin-bottom: 4px; } .fl p { font-size: .84rem; color: var(--muted); margin: 0; }
+  .vs td, .vs th { vertical-align: top; }
+  .route { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .route .card { border-top: 5px solid; }
+  .route .a { border-top-color: var(--green-600); } .route .b { border-top-color: var(--amber-600); } .route .c { border-top-color: var(--red-600); }
+  @media (max-width: 960px) { .flow, .route { grid-template-columns: 1fr; } .fl, .fl:first-child, .fl:last-child { border: 1px solid var(--line); border-radius: 12px; margin-bottom: 8px; } }
+</style></head>
+<body data-page="how">
+<div class="wf-head"><div class="wrap"><div class="crumbs"><a href="index.html">Overview</a> / How ASV works</div><h1>How Automated Signature Verification works</h1>
+<p>A plain-language walkthrough for project and business stakeholders: what the system does, what it decides, and what it deliberately leaves to people.</p></div></div>
+
+<main class="wrap" style="padding-top:34px">
+  <span class="eyebrow">End-to-end flow</span><h2>The same five steps in every use case</h2>
+  <div class="flow">
+    <div class="fl"><div class="n">1</div><h4>Receive</h4><p>Signed form is scanned: payment, FD upliftment or transfer.</p></div>
+    <div class="fl"><div class="n">2</div><h4>Extract</h4><p>Handwriting is located and cropped. Overlap or poor quality is flagged.</p></div>
+    <div class="fl"><div class="n">3</div><h4>Look up</h4><p>The verified specimen of the required signatory is fetched, using the account's signing mandate.</p></div>
+    <div class="fl"><div class="n">4</div><h4>Compare</h4><p>A similarity score from 0 to 100 is produced for each signature.</p></div>
+    <div class="fl"><div class="n">5</div><h4>Route</h4><p>Pass continues to normal approval. Anything else goes to a reviewer.</p></div>
+  </div>
+
+  <section style="padding:44px 0 10px"><span class="eyebrow">What happens to the result</span><h2>Three possible outcomes</h2>
+    <div class="route">
+      <div class="card a"><span class="pill pass">Likely match</span><h3 style="margin-top:10px">Score at or above 70, mandate met</h3><p class="muted">Continues through the bank's normal approval workflow. Staff can still approve, recheck or reject.</p></div>
+      <div class="card b"><span class="pill review">Suspicious</span><h3 style="margin-top:10px">Score below 70, or cannot compare</h3><p class="muted">Flagged for manual review. Includes overlapping writing, cut-off signatures or very faint scans. A low score does not prove forgery.</p></div>
+      <div class="card c"><span class="pill fail">Mandate not met</span><h3 style="margin-top:10px">Signatures genuine, rule not satisfied</h3><p class="muted">For example one signature where the account needs two, or the same person signing twice on an &ldquo;any 2 of 3&rdquo; rule.</p></div>
+    </div>
+  </section>
+
+  <section style="padding:34px 0 10px"><span class="eyebrow">Process change</span><h2>Without ASV vs with ASV</h2>
+    <div class="card"><table class="t vs"><thead><tr><th style="width:18%">Stage</th><th>Without ASV</th><th>With ASV</th></tr></thead><tbody>
+      <tr><td><b>Check</b></td><td>Staff visually compare the signature with the specimen on record, document by document.</td><td>ASV scores every signature in seconds against the correct signatory.</td></tr>
+      <tr><td><b>Consistency</b></td><td>Depends on the individual, workload and time of day.</td><td>Same method and same pass score applied to every instruction.</td></tr>
+      <tr><td><b>Multi-signatory rules</b></td><td>Manually matched against the mandate.</td><td>Each signature is matched to a named signatory and the rule is checked automatically.</td></tr>
+      <tr><td><b>Attention</b></td><td>Spread evenly across all documents.</td><td>Reviewers focus on flagged and borderline cases.</td></tr>
+      <tr><td><b>Evidence</b></td><td>Often a note or stamp.</td><td>Scores, crops, decision and reviewer note recorded in the audit log.</td></tr>
+    </tbody></table></div></section>
+
+  <section style="padding:34px 0 10px"><span class="eyebrow">Use-case comparison</span><h2>Where each use case differs</h2>
+    <div class="card" style="overflow-x:auto"><table class="t"><thead><tr><th>Criteria</th><th>Corporate payment</th><th>Fixed deposit upliftment</th><th>TT / remittance</th></tr></thead><tbody>
+      <tr><td><b>Main risk</b></td><td>Unauthorised company payment</td><td>Fraudulent withdrawal</td><td>Fraudulent fund transfer</td></tr>
+      <tr><td><b>Reference signature</b></td><td>Company signatory</td><td>Customer or joint holder</td><td>Company or customer signatory</td></tr>
+      <tr><td><b>Multiple signatories</b></td><td>Often applicable</td><td>Depends on account mandate</td><td>Often applicable for corporate</td></tr>
+      <tr><td><b>Financial impact</b></td><td>High to very high</td><td>High to very high</td><td>High to very high</td></tr>
+      <tr><td><b>Suggested order</b></td><td><span class="pill orange">Pilot first</span></td><td>Next</td><td>Next</td></tr>
+    </tbody></table></div></section>
+
+  <section style="padding:34px 0 10px"><span class="eyebrow">Governance</span><h2>Important limits, stated openly</h2>
+    <div class="grid g2">
+      <div class="card"><h3>Reference quality comes first</h3><p class="muted" style="margin:0">ASV is only as good as the specimen on record. Each signature must be compared with the specific signatory the mandate requires, not any signature on the account.</p></div>
+      <div class="card"><h3>Genuine signatures vary</h3><p class="muted" style="margin:0">Writing conditions, age, speed and scan quality all change a signature. That is why the result is a score for review, not proof.</p></div>
+      <div class="card"><h3>Image-only comparison</h3><p class="muted" style="margin:0">Scanned documents carry no pen pressure, signing speed or stroke order. Those signals are only available if captured at signing time.</p></div>
+      <div class="card"><h3>Humans stay in control</h3><p class="muted" style="margin:0">High-value instructions are never authorised on a score alone. Thresholds and policy are set by the bank after model validation.</p></div>
+    </div>
+    <div class="card" style="margin-top:20px;background:var(--orange-100);border-color:#f9d3ae"><b>About this demo.</b> The comparison runs in your browser on sample or uploaded images using a demonstration engine. The interface, mandate logic and decision flow are what a production model would plug into.</div>
+  </section>
+  <div style="text-align:center;padding:30px 0 6px"><a class="btn btn-primary" href="payment.html">Try the pilot workflow &rarr;</a></div>
+</main>
+<script src="js/shell.js"></script>
+</body></html>
