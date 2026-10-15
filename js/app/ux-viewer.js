@@ -7,8 +7,8 @@
   function openViewer(img) {
     const sheet = img.closest(".sheet"), pair = sheet ? [].slice.call(sheet.querySelectorAll(".card-sig img")) : [];
     const compare = pair.length === 2, title = sheet ? sheet.querySelector("h3").textContent : (img.alt || "Signature");
-    const status = sheet && sheet.querySelector("header .st") ? sheet.querySelector("header .st").textContent : "", score = sheet && sheet.querySelector(".mark span") ? sheet.querySelector(".mark span").textContent : "";
-    const pass = sheet && sheet.querySelector(".nums i:nth-last-child(2)") ? sheet.querySelector(".nums i:nth-last-child(2)").textContent : "";
+    const gg = sheet && sheet.querySelector(".gauge"), status = sheet && sheet.querySelector("header .st") ? sheet.querySelector("header .st").textContent : "", score = gg ? gg.dataset.score : "";
+    const pass = gg ? gg.dataset.pass : "";
     const o = document.createElement("div"); o.className = "sigv-o"; const prev = document.activeElement;
     const st = { mode: compare ? "side" : "one", zoom: 1.5, op: 0.5 };
     o.innerHTML = '<div class="sigv" role="dialog" aria-modal="true" aria-label="Signature viewer"><header><span>' + esc(title) + (status ? ' <span class="muted" style="font-weight:400">' + esc(status) + "</span>" : "") + '</span><button class="btn" type="button" data-x>Close</button></header>' +

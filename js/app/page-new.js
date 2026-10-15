@@ -33,7 +33,7 @@ Shell.init({ page: "new-case.html", roles: ["maker"], module: "param", tab: "reg
       '<div><label class="f" for="currency">Currency</label><input id="currency" type="text" list="cur" maxlength="6" value="' + esc(S.values.currency || t.defaultCurrency || "MYR") + '" autocomplete="off"><datalist id="cur">' + Object.keys(A.FX).map((c) => '<option value="' + c + '">').join("") + '</datalist><div class="hint">Any currency code is accepted.</div></div>' +
       fieldsOf().map(fieldHtml).join("") + "</div></div></section>" +
       '<section class="panel"><header>Scanned instruction<span class="tools small muted" id="docname"></span></header><div class="body">' +
-      '<div class="fgrid"><div><label class="f" for="file">Upload a scan</label><input id="file" type="file" accept="image/png,image/jpeg"><div class="hint">PNG or JPG. The signature does not need to be cropped.</div></div>' +
+      '<div class="fgrid"><div><label class="f" for="file">Upload a scan</label><input id="file" type="file" accept="image/png,image/jpeg"><div class="hint">Drag a PNG or JPG anywhere on this page, paste a screenshot, or choose a file. The signature does not need to be cropped.</div></div>' +
       '<div><label class="f" for="train">Or use a training scan</label><div style="display:flex;gap:8px"><select id="train"></select><button type="button" class="btn" id="gen">Generate</button></div><div class="hint">Made-up documents for practice. Choose an account first.</div></div></div>' +
       '<div class="docview" id="preview" style="margin-top:12px;display:none"></div></div></section>' +
       '<div class="actions"><button type="button" class="btn primary" id="go">Register case</button><a class="btn" href="cases.html">Cancel</a></div>';

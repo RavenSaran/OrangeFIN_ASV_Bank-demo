@@ -18,7 +18,7 @@
       "<h6>Reference</h6>" + link("specimens.html", "Specimen register") + link("policy.html", "Policy and limits") +
       (["auditor", "manager", "head"].includes(user.role) ? "<h6>Governance</h6>" + link("audit.html", "Audit trail") + link("settings.html", "Settings") : "");
     document.body.innerHTML =
-      '<header class="topbar"><a class="brand" href="dashboard.html"><i>O</i><span>OrangeFIN<small>Signature verification</small></span></a>' +
+      '<header class="topbar"><a class="brand" href="dashboard.html"><i>O</i><span>OrangeFIN ASV<small>Automated signature verification</small></span></a>' +
       '<form class="gsearch" id="gs" role="search"><input type="search" id="gq" placeholder="Case number, account or customer" aria-label="Search cases"></form>' +
       '<div class="top-r"><span class="muted">' + esc(A.BRANCHES[user.branch]) + " (" + user.branch + ')</span><div class="who"><b>' + esc(user.name) + "</b><span>" + esc(UI.post(user)) + " (" + user.id + ')</span></div>' +
       '<span class="sess" id="sess" title="Session ends after ' + A.POLICY.sessionMinutes + ' minutes of inactivity"></span><button id="out" type="button">Sign out</button></div></header>' +
@@ -41,8 +41,8 @@
   function setModule(key, tab, user) {
     const bar = document.getElementById("modbar"), root = document.documentElement;
     document.querySelectorAll(".side a[data-mod]").forEach((a) => a.classList.toggle("here", a.dataset.mod === key));
-    if (!key) { bar.innerHTML = ""; setAccent(DEFAULT_ACCENT); root.style.setProperty("--top", "46px"); return; }
-    const m = A.MODULES[key]; setAccent(m.accent); root.style.setProperty("--top", "88px");
+    if (!key) { bar.innerHTML = ""; setAccent(DEFAULT_ACCENT); root.style.setProperty("--top", "56px"); return; }
+    const m = A.MODULES[key]; setAccent(m.accent); root.style.setProperty("--top", "100px");
     const waiting = user ? UI.queue(user, DB.cases().filter((c) => A.TYPES[c.type].module === key)).length : 0;
     const tabs = [["dashboard", "Dashboard", "module.html?m=" + key], ["work", user && user.role === "auditor" ? "Needs attention" : "Work waiting for you", "work.html?m=" + key, waiting], ["cases", "All cases", "cases.html?m=" + key]]
       .concat(user && user.role === "maker" ? [["register", "Register", "new-case.html?m=" + key]] : []).concat([["process", "Process", "flow.html?m=" + key]]);
