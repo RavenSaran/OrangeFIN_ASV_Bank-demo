@@ -11,9 +11,14 @@ Front-end demonstration only: data stays in the browser and the signature score 
 |---|---|---|
 | Corporate payment | Company payment instructions | Signing mandates, duplicate payment check, 3 approval levels |
 | Fixed deposit | Counter withdrawals and rollovers | Identity check, joint accounts, payout estimate, minimum balance, 2 approval levels |
-| TT and remittance | Cross-border transfers | BIC check, beneficiary screening, same-day cut-off, 3 approval levels |
+| TT and remittance | High-value over-the-counter and cross-border transfers | BIC check, beneficiary screening, same-day cut-off, daily limit, cash reporting, high-risk countries, 3 approval levels |
+| Branch transactions and LOI | Signed letters of instruction for changes and requests on a company account | Request type decides the signatures needed, company chop check, 3 approval levels |
+| Account opening and mandate updates | New accounts and changes to who may sign | Board resolution date, KYC and KYB checklist, existing signatories compared, never below Level 2 |
+| Trade finance | Letters of credit and guarantees | Every required signatory, company chop, facility headroom, counterparty risk, beneficiary screening, never below Level 2 |
 
-All three share: the sign-in, the staff directory, the customer and specimen register, the case list, the audit trail and the approval rules.
+The last three, with TT and remittance, are the four use cases in the banking infographic. The analysis and plan are in `docs/analysis-and-plan.md`.
+
+All six share: the sign-in, the staff directory, the customer and specimen register, the case list, the audit trail and the approval rules.
 
 ## Staff and module access
 
@@ -22,6 +27,9 @@ All three share: the sign-in, the staff directory, the customer and specimen reg
 | `PO-1042`, `PO-1057` | Aisha Rahman, Daniel Lee | Payments Operations Officer | Corporate payment |
 | `CS-1042`, `CS-1060` | Nurul Huda Zainal, Kevin Tan | Customer Service Officer | Fixed deposit |
 | `RO-1042`, `RO-1057` | Lim Jia Hui, Arjun Pillai | Remittance Officer | TT and remittance |
+| `LO-1042`, `LO-1057` | Siti Aminah Yusof, Raj Kumar Nair | Branch Operations Officer | Branch transactions and LOI |
+| `AO-1042`, `AO-1057` | Wong Mei Ling, Ahmad Zaki Rahim | Corporate Banking Officer | Account opening and mandate updates |
+| `TF-1042`, `TF-1057` | Tan Chee Meng, Nurul Ain Hashim | Trade Finance Officer | Trade finance |
 | `FR-3004`, `FR-3011` | Farid Hakim, Marcus Tan Wei Lun | Fraud and Compliance Analyst (two, so a second analyst can clear) | All |
 | `SO-2011` | Priya Nair | Senior Operations Officer (approves Level 1) | All |
 | `BM-4001` | Hafiz Ismail | Branch Manager (approves Level 2) | All |
@@ -40,8 +48,8 @@ Nobody approves a case they registered or cleared. Module access is enforced in 
 | Score and risk | Pass score (bank-wide, per module, per signatory, stricter for large amounts), the score below which a signature is high risk (likely forgery), look-alike check |
 | Amounts and approval | Approval levels per module, lowest level after a cleared flag, where ASV is required, where an analyst reviews clean matches, where two analysts must clear, signatures needed by amount, currency rates and unknown-currency rule |
 | Capture quality | Good and Fair grades, what takes points off, size limits, whether a Poor capture forces review |
-| Process and limits | Service targets, minimum note length, callback reference, idle sign-out, sign-in lock, duplicate window, specimen age warning |
-| Modules | Fixed deposit minimum balance and interest kept, TT cut-off time, watchlist and match rule |
+| Process and limits | Service targets, minimum note length, callback reference, idle sign-out, sign-in lock, duplicate window, specimen age warning, company chop check |
+| Modules | Fixed deposit minimum balance and interest kept, board resolution maximum age, TT daily limit and cash reporting threshold, TT cut-off time, watchlist and match rule |
 
 Each change needs a written reason, is checked before saving (for example, high risk must be below the pass score), and is written to the audit trail with the old and new value. Each page can be reset to the shipped values. The Policy page shows the values in force.
 
@@ -59,6 +67,12 @@ Each change needs a written reason, is checked before saving (for example, high 
 | Shortcuts | `?` lists them: `G` then `H` Home, `W` My work, `C` All cases, `S` Specimen register |
 
 The next-step panel on a case stays in view while you scroll. Code: `js/app/ux.js`, `js/app/ux-viewer.js`, `css/ux.css`.
+
+## The company chop and the new checks
+
+ASV now looks for the company chop (a red rubber stamp) on a scan, as well as the signatures. The Letters, Mandates and Trade finance modules require it. A clean match with no chop is flagged for a person to check the original. The check finds a stamp; it does not say whether it is the right one. It can be turned off for the whole bank in Settings.
+
+Other checks added by the four use cases: the signatures needed follow the type of request (a major change needs the full signing rule); some requests never go below Level 2; a daily limit, a facility limit or a High risk counterparty sends a clean match to an analyst before approval; and a mandate update checks the board resolution date and the KYC and KYB confirmations.
 
 ## How to explain it
 
@@ -79,6 +93,7 @@ The next-step panel on a case stays in view while you scroll. Code: `js/app/ux.j
 | `js/app/data.js` | Staff, roles, modules (the shared core) |
 | `js/app/accounts.js` | Customer account master with signing mandates and specimens |
 | `js/app/modules/` | One file per module (its form, limits, process, extra checks) plus its starting cases |
+| `js/app/modules/kit.js`, `loi.js`, `mandate.js`, `trade.js`, `glance.js` | The shared flow builder, the three newer modules and the "at a glance" blocks |
 | `js/app/rules.js` | Statuses, who may do what, approval levels, four-eyes checks |
 | `js/app/settings.js`, `settings-spec.js`, `page-settings.js` | The thresholds: values and rules, the wording shown, and the Settings page |
 | `js/engine.js`, `js/verify.js`, `js/sigsynth.js` | Signature extraction and comparison, and the signature generator for demo data |

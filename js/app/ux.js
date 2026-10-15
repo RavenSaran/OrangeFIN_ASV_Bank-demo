@@ -102,7 +102,7 @@
     },
     mount(user) {
       if (document.body.dataset.ux) return; document.body.dataset.ux = "1";
-      const skip = document.createElement("a"); skip.className = "skip"; skip.href = "#view"; skip.textContent = "Skip to content"; document.body.insertBefore(skip, document.body.firstChild);
+      const skip = document.createElement("a"); skip.className = "skiplink"; skip.href = "#view"; skip.textContent = "Skip to content"; document.body.insertBefore(skip, document.body.firstChild);
       const view = document.getElementById("view"); if (view) view.setAttribute("tabindex", "-1");
       const gq = document.getElementById("gq");
       if (gq) { gq.placeholder = "Search cases, accounts, pages"; gq.addEventListener("focus", () => { gq.blur(); openPalette(user); }); const k = document.createElement("span"); k.className = "kbd"; k.textContent = "Ctrl K"; gq.parentNode.appendChild(k); }

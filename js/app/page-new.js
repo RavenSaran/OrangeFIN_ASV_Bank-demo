@@ -7,7 +7,7 @@ Shell.init({ page: "new-case.html", roles: ["maker"], module: "param", tab: "reg
   const UC = () => (window.UseCase || {})[S.type] || {}; // the extra checks of the module being registered in
   if (!modKey && types.length === 1) Shell.setModule(A.TYPES[S.type].module, "register");
   const opt = (v, l, sel) => '<option value="' + esc(v) + '"' + (sel ? " selected" : "") + ">" + esc(l) + "</option>";
-  const acctsFor = () => A.ACCOUNTS.filter((a) => a.kind === A.TYPES[S.type].kind);
+  const acctsFor = () => A.ACCOUNTS.filter((a) => a.kind === A.TYPES[S.type].kind && (!A.TYPES[S.type].accountOk || A.TYPES[S.type].accountOk(a)));
   const fieldsOf = () => A.TYPES[S.type].fields;
 
   view.innerHTML = '<div class="pagehead"><div><div class="crumb"><a href="cases.html">Cases</a> / New</div><h1>' + esc(A.TYPES[S.type].registerLabel || "Register instruction") + '</h1></div></div><div class="cols"><div id="left"></div><div id="right"></div></div>';
@@ -43,9 +43,10 @@ Shell.init({ page: "new-case.html", roles: ["maker"], module: "param", tab: "reg
   function fillTrain() {
     const sel = left.querySelector("#train"), a = S.acct, keep = sel.value; // keep the choice when the options are rebuilt
     if (!a) { sel.innerHTML = opt("", "Select an account first"); return; }
-    const n = R.requiredSigs(a, R.toMYR(Number(S.values.amount) || 0, S.values.currency || "MYR").myr);
+    const n = R.requiredSigs(a, R.toMYR(Number(S.values.amount) || 0, S.values.currency || "MYR").myr, { type: S.type, fields: S.values });
     const o = [["genuine", "Genuine, all required signatories"], ["forged", n > 1 ? "Last required signature is forged" : "Signature is forged"]];
     if (n > 1) { o.push(["short", "Only one signature"]); o.push(["twice", "Same person signed twice"]); }
+    if (A.TYPES[S.type].chop) o.push(["nochop", "Genuine signatures, company chop missing"]);
     sel.innerHTML = o.map((x) => opt(x[0], x[1], x[0] === keep)).join(""); sel._n = n;
   }
 
@@ -53,7 +54,7 @@ Shell.init({ page: "new-case.html", roles: ["maker"], module: "param", tab: "reg
   function drawRight() {
     const a = S.acct, amt = Number(S.values.amount) || 0, cur = String(S.values.currency || "MYR").toUpperCase(), fx = R.toMYR(amt, cur);
     if (!a) { right.innerHTML = '<section class="panel"><header>Account</header><div class="body muted">Select an account to see the signing mandate and the specimen signatures on file.</div></section>' + afterPanel(); return; }
-    const need = R.requiredSigs(a, fx.myr), lvl = R.approvalLevel(fx.myr, fx.known, false, S.type), due = R.dueAt(new Date().toISOString(), S.type), top = A.TYPES[S.type].levels.length;
+    const need = R.requiredSigs(a, fx.myr, { type: S.type, fields: S.values }), lvl = R.approvalLevel(fx.myr, fx.known, false, S.type, { fields: S.values, minLevel: 1 }), due = R.dueAt(new Date().toISOString(), S.type), top = A.TYPES[S.type].levels.length;
     const checks = UC().registerChecks ? UC().registerChecks(S.values, a, DB.cases(), { fx, need, lvl }) : [];
     // what the thresholds in Settings mean for this instruction
     const skip = Cfg.asvNotRequired(S.type, fx.myr, fx.known), hv = !skip && Cfg.highValueReview({ type: S.type, myr: fx.myr }), two = Cfg.secondAnalyst({ type: S.type, myr: fx.myr }), yrs = Cfg.specimenYears(a), block = !fx.known && Cfg.settings.amount.unknownCurrency === "block", fromAmt = Cfg.settings.amount.asvFrom[A.TYPES[S.type].module];
@@ -98,7 +99,7 @@ Shell.init({ page: "new-case.html", roles: ["maker"], module: "param", tab: "reg
       const t = A.TYPES[S.type], vals = { account: a.no, customer: a.name, amount: Number(S.values.amount || 0).toLocaleString("en-US"), currency: String(S.values.currency || "MYR").toUpperCase() };
       fieldsOf().forEach((fl) => (vals[fl[0]] = S.values[fl[0]] || ""));
       const fields = [{ id: "account", label: "Account no." }, { id: "customer", label: "Customer" }, { id: "amount", label: "Amount" }, { id: "currency", label: "Currency" }].concat(fieldsOf().filter((fl) => fl[2] !== "checkbox").map((fl) => ({ id: fl[0], label: fl[1] })));
-      S.doc = toJpeg(SigSynth.renderDocument({ formTitle: t.long, formCode: t.form, fields }, vals, signers)); S.docName = "Training scan: " + sel.options[sel.selectedIndex].text; showDoc();
+      S.doc = toJpeg(SigSynth.renderDocument({ formTitle: t.long, formCode: t.form, fields }, vals, signers, { chop: !!t.chop && kind !== "nochop" })); S.docName = "Training scan: " + sel.options[sel.selectedIndex].text; showDoc();
     }
     if (e.target.id === "go") submit();
   });
@@ -114,9 +115,9 @@ Shell.init({ page: "new-case.html", roles: ["maker"], module: "param", tab: "reg
   left.addEventListener("input", (e) => { if (["amount", "currency"].includes(e.target.id) || (e.target.id || "").startsWith("f_")) { readValues(); if (e.target.id === "amount" || e.target.id === "currency") fillTrain(); drawRight(); } });
 
   function submit() {
-    readValues(); const errs = [], a = S.acct, amt = Number(S.values.amount), cur = String(S.values.currency || "").trim().toUpperCase(), t = A.TYPES[S.type];
+    readValues(); const errs = [], a = S.acct, amt = Number(S.values.amount) || 0, cur = String(S.values.currency || "").trim().toUpperCase(), t = A.TYPES[S.type];
     if (!a) errs.push("Select an account."); else if (a.status !== "Active") errs.push("The account is " + a.status.toLowerCase() + ".");
-    if (!(amt > 0)) errs.push("Enter an amount greater than zero.");
+    if (!(amt > 0) && !t.amountOptional) errs.push("Enter an amount greater than zero."); if (t.amountOptional && S.values.amount && !(amt >= 0)) errs.push("The amount must be a number, or left blank.");
     if (!/^[A-Z]{2,6}$/.test(cur)) errs.push("Enter a currency code of 2 to 6 letters.");
     if (/^[A-Z]{2,6}$/.test(cur) && !R.toMYR(1, cur).known && Cfg.settings.amount.unknownCurrency === "block") errs.push("There is no exchange rate for " + cur + ". Use another currency, or ask a Branch Manager to add the rate in Settings.");
     fieldsOf().forEach((f) => {
@@ -131,7 +132,7 @@ Shell.init({ page: "new-case.html", roles: ["maker"], module: "param", tab: "reg
     const fx = R.toMYR(amt, cur), now = new Date().toISOString(), fields = {};
     fieldsOf().forEach((f) => (fields[f[0]] = String(S.values[f[0]] || "").trim()));
     const c = { id: DB.nextCaseNo(S.type), type: S.type, accountNo: a.no, customer: a.name, branch: user.branch, fields, amount: amt, currency: cur, myr: fx.myr, fxKnown: fx.known, fxRate: fx.rate,
-      required: R.requiredSigs(a, fx.myr), status: "registered", level: null, override: false, maker: user.id, makerName: user.name, createdAt: now, dueAt: R.dueAt(now, S.type), doc: S.doc, asvSkip: Cfg.asvNotRequired(S.type, fx.myr, fx.known) };
+      required: R.requiredSigs(a, fx.myr, { type: S.type, fields }), status: "registered", level: null, override: false, maker: user.id, makerName: user.name, createdAt: now, dueAt: R.dueAt(now, S.type), doc: S.doc, asvSkip: Cfg.asvNotRequired(S.type, fx.myr, fx.known) };
     const extra = UC().onRegister ? UC().onRegister(c, S.values, a, DB.cases()) || [] : [];
     const r = DB.saveCase(c);
     if (!r.ok) { box.innerHTML = '<div class="msg err" role="alert">' + esc(r.error) + "</div>"; return; }

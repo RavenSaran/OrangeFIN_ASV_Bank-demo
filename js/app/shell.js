@@ -11,7 +11,7 @@
     mine.forEach((c) => { const k = A.TYPES[c.type].module; perMod[k] = (perMod[k] || 0) + 1; });
     const link = (href, label, extra) => '<a href="' + href + '" data-p="' + href.split("?")[0] + '">' + label + (extra || "") + "</a>";
     const badge = (n, hot) => (n ? '<span class="n' + (hot ? " hot" : "") + '" title="Waiting for you">' + n + "</span>" : "");
-    const mods = user.modules.map((k) => { const m = A.MODULES[k]; return '<a href="module.html?m=' + k + '" data-mod="' + k + '"><span class="mod" style="--m:' + m.accent[0] + '">' + esc(m.name) + "</span>" + badge(perMod[k], true) + "</a>"; }).join("");
+    const mods = user.modules.map((k) => { const m = A.MODULES[k]; return '<a href="module.html?m=' + k + '" data-mod="' + k + '"><span class="mod" style="--m:' + m.accent[0] + '">' + esc(m.nav || m.name) + "</span>" + badge(perMod[k], true) + "</a>"; }).join("");
     const nav =
       "<h6>Work</h6>" + link("dashboard.html", "Home") + link("work.html", "My work", badge(mine.length, true)) + link("cases.html", "All cases") + (user.role === "maker" ? link("new-case.html", "Register instruction") : "") +
       "<h6>Modules</h6>" + mods +

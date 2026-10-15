@@ -1,6 +1,6 @@
 /* Experience layer: command palette, notification bell, signature viewer, sortable tables, Home hero and role guide. */
-.skip { position: absolute; left: 8px; top: -48px; z-index: 300; background: #fff; color: var(--text); padding: 8px 12px; border: 2px solid var(--orange); font-weight: 600; }
-.skip:focus { top: 8px; }
+.skiplink { position: absolute; left: 8px; top: -48px; z-index: 300; background: #fff; color: var(--text); padding: 8px 12px; border: 2px solid var(--orange); font-weight: 600; }
+.skiplink:focus { top: 8px; }
 
 /* top bar additions */
 .kbd { display: inline-block; min-width: 18px; padding: 0 5px; height: 18px; line-height: 16px; text-align: center; font: 600 11px/16px var(--sans); color: var(--muted); background: #f4f5f4; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 3px; }

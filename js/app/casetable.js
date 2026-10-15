@@ -6,7 +6,7 @@
   UI.nextAction = function (user, c) {
     const hit = !!(c.screen && c.screen.hit && !c.screen.cleared);
     if (user.role === "maker") return { registered: c.asvSkip && !c.asv ? "Submit for approval (ASV not required)" : "Run signature verification", reopened: "Correct it and verify again", asv_pass: hit ? "Refer for review: screening hit" : "Submit for approval", asv_flag: "Refer for review", asv_mandate: "Return to the customer" }[c.status] || "Nothing to do";
-    if (user.role === "fraud") return { fraud_review: c.fraudFirst ? (c.fraudFirst.by === user.id ? "Waiting for a second analyst" : "Clear as second analyst") : c.reviewReason === "high_value" ? "Call back and confirm the match" : "Review and decide", on_hold: "Repeat the callback" }[c.status] || "Nothing to do";
+    if (user.role === "fraud") return { fraud_review: c.fraudFirst ? (c.fraudFirst.by === user.id ? "Waiting for a second analyst" : "Clear as second analyst") : ["high_value", "enhanced"].includes(c.reviewReason) ? "Call back and confirm the match" : "Review and decide", on_hold: "Repeat the callback" }[c.status] || "Nothing to do";
     if (A_approveLevel(user)) return c.status === "pending_approval" ? "Approve, reject or return" : "Nothing to do";
     const owner = Rules.STATUS[c.status].owner;
     return owner ? "With " + owner.toLowerCase() : "Closed";
@@ -37,7 +37,7 @@
     const rows = cases.map((c) => {
       const owner = Rules.STATUS[c.status].owner;
       return '<tr class="click" tabindex="0" data-id="' + esc(c.id) + '"><td class="id">' + esc(c.id) + "</td><td>" + UI.modTag(c.type) + '<span class="sub">' + esc(c.customer) + "</span></td>" +
-        '<td class="r nowrap" data-s="' + (c.myr == null ? -1 : Math.round(c.myr)) + '">' + esc(UI.money(c.amount, c.currency)) + (c.currency !== "MYR" && c.myr != null ? '<span class="sub">MYR ' + Math.round(c.myr).toLocaleString("en-US") + "</span>" : c.myr == null ? '<span class="sub">No FX rate</span>' : "") + "</td>" +
+        '<td class="r nowrap" data-s="' + (c.myr == null ? -1 : Math.round(c.myr)) + '">' + esc(c.amount ? UI.money(c.amount, c.currency) : "No amount") + (c.amount && c.currency !== "MYR" && c.myr != null ? '<span class="sub">MYR ' + Math.round(c.myr).toLocaleString("en-US") + "</span>" : c.myr == null ? '<span class="sub">No FX rate</span>' : "") + "</td>" +
         "<td>" + UI.level(c) + "</td><td>" + UI.status(c.status) + (owner && opts.owner ? '<span class="sub">With ' + esc(owner.toLowerCase()) + "</span>" : "") + "</td>" +
         (opts.user ? '<td><b>' + esc(UI.nextAction(opts.user, c)) + "</b></td>" : "") +
         '<td data-s="' + Date.parse(c.dueAt) + '">' + UI.sla(c) + '</td><td class="nowrap muted" data-s="' + Date.parse(c.createdAt) + '">' + esc(opts.when === "ago" ? UI.ago(c.createdAt) : UI.dt(c.createdAt)) + "</td></tr>";

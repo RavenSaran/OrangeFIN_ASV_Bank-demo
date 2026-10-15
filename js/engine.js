@@ -191,5 +191,35 @@
     return { box: { x: x0, y: y0, w: x1 - x0, h: y1 - y0 }, canvas: crop(src, { x0, y0, x1, y1 }, 1, 10), quality: 80, grade, notes: ["Pieces merged by staff"], selected: true };
   }
 
-  window.ASV = { extractSignatures, compare, mergeCandidates, TUNE };
+  // ---- company chop (rubber stamp) -------------------------------------
+  // A chop is stamped in red ink as a compact mark of some size. The signature finder ignores red ink on purpose, so this looks for it separately.
+  // It reports whether a stamp-like mark is present and where. It does not judge whether the stamp is the right one.
+  function detectStamp(src) {
+    const sc = Math.min(1, 1000 / src.width), W = Math.round(src.width * sc), H = Math.round(src.height * sc);
+    const c = document.createElement("canvas"); c.width = W; c.height = H;
+    const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, W, H); x.drawImage(src, 0, 0, W, H);
+    const d = x.getImageData(0, 0, W, H).data, C = 8, gw = Math.ceil(W / C), gh = Math.ceil(H / C), cells = new Uint16Array(gw * gh);
+    for (let y = 0; y < H; y++) for (let xx = 0; xx < W; xx++) { const p = (y * W + xx) * 4; if (d[p + 3] > 128 && d[p] > 120 && d[p] > d[p + 1] + 45 && d[p] > d[p + 2] + 45) cells[((y / C) | 0) * gw + ((xx / C) | 0)]++; }
+    const lab = new Int32Array(gw * gh).fill(-1); let best = null;
+    for (let s = 0; s < gw * gh; s++) {
+      if (cells[s] < 2 || lab[s] >= 0) continue;
+      const q = [s], b = { x0: 1e9, y0: 1e9, x1: -1, y1: -1, px: 0 }; lab[s] = s;
+      while (q.length) {
+        const p = q.pop(), px = p % gw, py = (p / gw) | 0;
+        b.px += cells[p]; b.x0 = Math.min(b.x0, px); b.y0 = Math.min(b.y0, py); b.x1 = Math.max(b.x1, px); b.y1 = Math.max(b.y1, py);
+        for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+          const nx = px + dx, ny = py + dy; if (nx < 0 || ny < 0 || nx >= gw || ny >= gh) continue;
+          const n = ny * gw + nx; if (cells[n] >= 2 && lab[n] < 0) { lab[n] = s; q.push(n); }
+        }
+      }
+      if (!best || b.px > best.px) best = b;
+    }
+    if (!best) return { found: false, pixels: 0, box: null };
+    const w = (best.x1 - best.x0 + 1) * C, h = (best.y1 - best.y0 + 1) * C;
+    // a stamp is a real mark (enough red ink), not a thin line or a tiny speck, and not most of the page
+    const found = best.px >= 250 && w >= 40 && h >= 30 && w <= W * 0.6 && h <= H * 0.6;
+    return { found, pixels: best.px, box: { x: best.x0 * C / sc, y: best.y0 * C / sc, w: w / sc, h: h / sc } };
+  }
+
+  window.ASV = { extractSignatures, compare, mergeCandidates, detectStamp, TUNE };
 })();

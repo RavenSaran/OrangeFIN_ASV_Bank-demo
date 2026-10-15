@@ -8,7 +8,7 @@
   function sheets(c) {
     const asv = c.asv, a = acct(c);
     const head = '<div class="msg ' + ({ pass: "ok", review: "warn", mandate: "err" }[asv.verdict]) + '"><b>' + ({ pass: "Likely match.", review: "Flagged for review.", mandate: "Signing mandate not met." }[asv.verdict]) + "</b> " +
-      ({ pass: "Every signature matches an authorised signatory and the mandate is satisfied.", review: "At least one signature scored below its pass score or could not be compared reliably. A low score does not prove forgery." + (asv.highRisk ? " <b>High risk:</b> at least one signature is far below the pass score and is likely a forgery. Only an analyst can confirm it." : ""), mandate: "The signatures present do not satisfy the rule: " + esc(a.mandate.text) + "." }[asv.verdict]) + "</div>";
+      ({ pass: "Every signature matches an authorised signatory and the mandate is satisfied.", review: (asv.stamp && asv.stamp.required && !asv.stamp.found && asv.sigs.every((x) => x.pass) ? "The signatures match, but the company chop (rubber stamp) was not found on the scan. A person must check the original." : "At least one signature scored below its pass score or could not be compared reliably. A low score does not prove forgery.") + (asv.highRisk ? " <b>High risk:</b> at least one signature is far below the pass score and is likely a forgery. Only an analyst can confirm it." : ""), mandate: "The signatures present do not satisfy the rule: " + esc(a.mandate.text) + "." }[asv.verdict]) + "</div>";
     const body = asv.sigs.map((s, i) => {
       const thr = s.thr || asv.threshold, hi = asv.highBelow || null, band = s.band || (s.pass ? "match" : "borderline"), p = party(c, s.matched.id), others = a.parties.filter((x) => x.id !== p.id).map((x) => esc(x.name.split(" ")[0]) + " <b>" + s.scores[x.id] + "</b>").join(" &nbsp; ");
       return '<section class="sheet"><header><h3>Signature ' + (i + 1) + (s.declared ? ", signed as " + esc(party(c, s.declared).name) : ", signatory not stated on the form") + '</h3><span class="st ' + (s.pass ? "pass" : band === "high" ? "fail" : "flag") + '">' + (s.pass ? "Likely match" : s.ambiguous ? "Ambiguous: matches another signatory" : s.poor ? "Cannot compare reliably" : band === "high" ? "High risk, likely forgery" : "Below pass score") + "</span></header>" +
@@ -18,7 +18,7 @@
         (others ? '<div class="others"><span>Against the other signatories:</span><span>' + others + "</span></div>" : "") + "</section>";
     }).join("");
     const mand = '<section class="panel"><header>Mandate check</header><div class="body small">' + esc(a.mandate.text) + ". Required for this amount: <b>" + asv.required + "</b>. Verified distinct signatories: <b>" + asv.distinct + "</b>." +
-      (asv.duplicate ? " The same person appears more than once and counts once." : "") + '<div class="hint">Run on ' + UI.dt(asv.ts) + ". Pass score " + asv.threshold + (asv.highBelow ? ", high risk below " + asv.highBelow : "") + ".</div></div></section>";
+      (asv.duplicate ? " The same person appears more than once and counts once." : "") + (asv.stamp && asv.stamp.required ? '<div class="st ' + (asv.stamp.found ? "pass" : "fail") + '" style="margin-top:8px">' + (asv.stamp.found ? "Company chop found on the scan" : "Company chop not found") + "</div>" + (asv.stamp.found ? '<div class="hint">ASV finds a stamp; it does not tell whether it is the right one. Check the original for high-value requests.</div>' : "") : "") + '<div class="hint">Run on ' + UI.dt(asv.ts) + ". Pass score " + asv.threshold + (asv.highBelow ? ", high risk below " + asv.highBelow : "") + ".</div></div></section>";
     return head + body + mand;
   }
   // A half-circle gauge: high risk, borderline and match zones, the pass line, and a needle that swings to the score.
@@ -78,10 +78,10 @@
     function run() {
       const sigs = W.sel.map((i) => Object.assign({}, W.ext.candidates[i], { declared: W.declared[i] || "auto" }));
       const refs = {}; a.parties.forEach((p) => (refs[p.id] = Sig.has(p) ? Sig.refCanvases(p) : SigSynth.renderReference(p.seed)));
-      const S = Cfg.settings, sc = S.score, mod = A.TYPES[c.type].module;
+      const S = Cfg.settings, sc = S.score, mod = A.TYPES[c.type].module, chop = ASV.detectStamp(W.doc), needChop = Cfg.chopRequired(c.type);
       const r = ASVLogic.evaluate({ sigs, parties: a.parties, refs, required: c.required, threshold: (pid) => Cfg.passFor({ module: mod, myr: c.myr, accountNo: c.accountNo, partyId: pid }),
-        settings: { highRiskOn: sc.highRiskOn, highRiskBelow: sc.highRiskBelow, marginOn: sc.marginOn, marginPoints: sc.marginPoints, poorForcesReview: S.quality.poorForcesReview } });
-      const asv = { ran: true, ts: new Date().toISOString(), threshold: r.threshold, highRisk: r.highRisk, highBelow: sc.highRiskOn ? sc.highRiskBelow : null, verdict: r.verdict, required: r.required, distinct: r.distinct, mandateMet: r.mandateMet, duplicate: r.duplicate, reasons: r.reasons,
+        stamp: needChop || chop.found ? { required: needChop, found: chop.found } : null, settings: { highRiskOn: sc.highRiskOn, highRiskBelow: sc.highRiskBelow, marginOn: sc.marginOn, marginPoints: sc.marginPoints, poorForcesReview: S.quality.poorForcesReview } });
+      const asv = { ran: true, ts: new Date().toISOString(), threshold: r.threshold, highRisk: r.highRisk, highBelow: sc.highRiskOn ? sc.highRiskBelow : null, verdict: r.verdict, stamp: r.stamp ? Object.assign({ box: chop.box }, r.stamp) : null, required: r.required, distinct: r.distinct, mandateMet: r.mandateMet, duplicate: r.duplicate, reasons: r.reasons,
         sigs: r.rows.map((row, i) => ({ index: i, declared: sigs[i].declared === "auto" ? null : sigs[i].declared, matched: row.matched, scores: row.scores, pass: row.pass, poor: row.poor, thr: row.thr, band: row.band, ambiguous: row.ambiguous, refIdx: row.refIdx, grade: sigs[i].grade, notes: row.notes, img: UI.ink(sigs[i].canvas) })) };
       done(asv);
     }

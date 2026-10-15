@@ -57,13 +57,18 @@ window.SETTINGS_SPEC = {
       { path: "lockMinutes", label: "Lock time", help: "How long a staff ID stays locked.", kind: "int", unit: "minutes", min: 1, max: 120 } ] },
     { title: "Other checks", intro: "", items: [
       { path: "duplicateDays", label: "Duplicate payment window", help: "Corporate payment: the same payee and amount within this many days is flagged as a possible duplicate.", kind: "int", unit: "days", min: 1, max: 365 },
+      { path: "chopCheck", label: "Check for the company chop", help: "Letters of instruction, mandate changes and trade finance must carry the company's rubber stamp. When on, ASV flags a scan with no chop for a person to check. It finds a stamp, not whether it is the right one.", kind: "bool" },
       { path: "specimenWarnYears", label: "Warn when specimens are older than", help: "Shown when registering. The customer should refresh their specimen cards. 0 turns the warning off.", kind: "int", unit: "years", min: 0, max: 20 } ] },
   ],
   module: [
     { title: "Fixed deposit", intro: "", items: [
       { path: "minLeft", label: "Minimum balance left in a deposit", help: "An upliftment cannot leave less than this, unless it takes the whole deposit.", kind: "money", unit: "deposit currency", min: 0 },
       { path: "interestKeptPct", label: "Interest kept on early withdrawal", help: "The share of the interest earned on the amount uplifted that the customer still receives.", kind: "pct", unit: "percent", min: 0, max: 100 } ] },
+    { title: "Account opening and mandate updates", intro: "", items: [
+      { path: "resolutionMaxDays", label: "Board resolution maximum age", help: "A resolution older than this is refused when registering. A future date is always refused.", kind: "int", unit: "days", min: 1, max: 365 } ] },
     { title: "TT and remittance", intro: "", items: [
+      { path: "ttDailyLimit", label: "Daily limit per account", help: "MYR equivalent. When the day's transfers on an account, with this one, go above it, the case needs an analyst review and at least Level 2.", kind: "money", unit: "MYR", min: 1 },
+      { path: "cashReportFrom", label: "Cash reporting threshold", help: "MYR. Cash handed over at or above this amount is shown with a note that a cash transaction report applies. 0 turns the note off.", kind: "money", unit: "MYR", min: 0 },
       { path: "cutoff", label: "Same-day cut-off", help: "Instructions approved after this time take the next business day. Use 24-hour time, such as 15:30.", kind: "time" },
       { path: "screeningRule", label: "Watchlist match rule", help: "Contains: the beneficiary name includes a watchlist entry. Exact: the whole name must equal an entry.", kind: "select", options: [["contains", "Name contains an entry"], ["exact", "Name equals an entry"]] },
       { custom: "watchlist" } ] },

@@ -35,16 +35,23 @@
   // The module's own limits decide the level. An unknown currency has no rate, so it goes to the module's highest authority.
   // A case cleared after a flag needs at least Level 2 (or the top level if the module has fewer).
   function levelsOf(type) { return A.TYPES[type || Object.keys(A.TYPES)[0]].levels; }
-  function approvalLevel(myr, known, override, type) {
-    const levels = levelsOf(type), top = levels.length; let lvl = top;
+  // A module can set a floor (an irreversible change never goes below Level 2), and a check on the case can raise it (c.minLevel).
+  function approvalLevel(myr, known, override, type, c) {
+    const levels = levelsOf(type), top = levels.length, t = A.TYPES[type] || {}; let lvl = top;
     if (known) lvl = levels.find((l) => l.upTo == null || myr <= l.upTo).n;
+    const floor = Math.max(t.minLevel || 1, (c && c.minLevel) || 1, c && t.minLevelFor ? t.minLevelFor(c.fields || {}) || 1 : 1);
+    lvl = Math.min(top, Math.max(lvl, floor));
     return override ? Math.min(top, Math.max(lvl, setting("amount.overrideMinLevel", 2))) : lvl;
   }
   function levelWho(n, type) { return levelsOf(type).find((l) => l.n === n).who; }
 
   // Number of distinct signatories the mandate needs for this amount.
-  function requiredSigs(account, myr) {
-    const m = account.mandate;
+  // The full requirement of the account's signing rule, whatever the amount.
+  const fullRequirement = (account) => (account.mandate.rule === "all" ? account.parties.length : account.mandate.n);
+  // ctx ({ type, fields }) lets a module decide by the kind of request: a major change needs the full requirement.
+  function requiredSigs(account, myr, ctx) {
+    const m = account.mandate, t = ctx && A.TYPES[ctx.type];
+    if (t && t.sigsFor) { const n = t.sigsFor(ctx.fields || {}, account, myr, fullRequirement(account)); if (n != null) return Math.min(n, account.parties.length); }
     if (m.rule === "all") return account.parties.length;
     if (m.tier && myr != null && myr <= m.tier.limit) return m.tier.n;
     return m.n;
@@ -118,10 +125,13 @@
         break;
       }
       case "submit":
+        if (c.asv && c.asv.verdict === "pass" && c.mustReview && !c.override) { // a check on this case (daily limit, facility, risk) needs an analyst even though the signatures match
+          c.status = "fraud_review"; c.reviewReason = "enhanced"; label = "Referred for enhanced review"; detail = "Likely match, but " + c.mustReview + " An analyst confirms by callback before approval."; break;
+        }
         if (c.asv && c.asv.verdict === "pass" && root.Cfg && root.Cfg.highValueReview(c) && !c.override) { // high value: an analyst confirms a clean match by callback before approval
           c.status = "fraud_review"; c.reviewReason = "high_value"; label = "Referred for high-value review"; detail = "Likely match, but this amount is reviewed by an analyst (callback to the signatory) before approval."; break;
         }
-        c.level = approvalLevel(c.myr, c.fxKnown, c.override, c.type); c.status = "pending_approval"; c.submittedAt = now;
+        c.level = approvalLevel(c.myr, c.fxKnown, c.override, c.type, c); c.status = "pending_approval"; c.submittedAt = now;
         label = "Submitted for approval"; detail = "Level " + c.level + " authority required (" + levelWho(c.level, c.type) + ")." + (c.asvSkip && !c.asv ? " ASV was not required for this amount." : ""); break;
       case "refer": c.status = "fraud_review"; label = "Referred for review"; detail = hit(c) ? "Screening hit: " + c.screen.reasons.join("; ") : "ASV flagged one or more signatures."; break;
       case "return_customer": c.status = "returned"; c.closedAt = now; c.closeNote = note; label = "Returned to customer"; break;
@@ -130,10 +140,10 @@
         if (root.Cfg && root.Cfg.secondAnalyst(c) && !c.fraudFirst) { // two analysts must agree: this is the first
           c.fraudFirst = Object.assign({ note, callback: cb }, who); label = reviewName(c) + ": cleared by the first analyst"; detail = note + (cb ? " Callback ref " + cb + "." : "") + " A second analyst must also clear this case."; break;
         }
-        if (c.reviewReason !== "high_value") c.override = true;
+        if (!["high_value", "enhanced"].includes(c.reviewReason)) c.override = true;
         if (c.screen) c.screen.cleared = true; c.fraud = Object.assign({ decision: "cleared", note, callback: cb }, who); if (c.fraudFirst) c.fraud.first = c.fraudFirst;
-        c.level = approvalLevel(c.myr, c.fxKnown, c.override, c.type); c.status = "pending_approval";
-        label = reviewName(c) + ": " + (c.reviewReason === "high_value" ? "match confirmed" : c.fraud.first ? "signature cleared by two analysts" : "signature cleared"); detail = note + (cb ? " Callback ref " + cb + "." : "") + " Now needs Level " + c.level + " approval."; break;
+        c.level = approvalLevel(c.myr, c.fxKnown, c.override, c.type, c); c.status = "pending_approval";
+        label = reviewName(c) + ": " + (["high_value", "enhanced"].includes(c.reviewReason) ? "match confirmed" : c.fraud.first ? "signature cleared by two analysts" : "signature cleared"); detail = note + (cb ? " Callback ref " + cb + "." : "") + " Now needs Level " + c.level + " approval."; break;
       }
       case "fraud_confirm":
         c.fraud = Object.assign({ decision: "forgery", note }, who); c.fraudSuspected = true; c.status = "rejected"; c.closedAt = now;
@@ -158,5 +168,5 @@
     return Object.keys(LABELS).map((key) => Object.assign({ key, label: L[key], kind: kinds[key], needsNote: !!NOTE_MIN[key] }, can(user, c, key)));
   }
 
-  root.Rules = { STATUS, toMYR, approvalLevel, levelWho, levelsOf, requiredSigs, dueAt, can, perform, actionsFor, labelsFor, hasModule, typeOf, moduleOf, NOTE_MIN };
+  root.Rules = { STATUS, toMYR, approvalLevel, levelWho, levelsOf, requiredSigs, fullRequirement, dueAt, can, perform, actionsFor, labelsFor, hasModule, typeOf, moduleOf, NOTE_MIN };
 })(typeof window !== "undefined" ? window : globalThis);

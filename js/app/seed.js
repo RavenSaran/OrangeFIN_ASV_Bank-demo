@@ -15,11 +15,12 @@
     (A.SEEDS || []).forEach((s) => {
       const a = acct(s.acct), cfg = A.TYPES[s.type], fx = R.toMYR(s.amount, s.cur), maker = user(s.maker);
       seq[cfg.prefix] = (seq[cfg.prefix] || 0) + 1;
-      const id = cfg.prefix + "-" + yymm + "-" + String(seq[cfg.prefix]).padStart(4, "0"), created = at(s.age), required = R.requiredSigs(a, fx.myr);
+      const id = cfg.prefix + "-" + yymm + "-" + String(seq[cfg.prefix]).padStart(4, "0"), created = at(s.age), required = R.requiredSigs(a, fx.myr, { type: s.type, fields: s.fields });
       const c = { id, type: s.type, accountNo: a.no, customer: a.name, branch: maker.branch, fields: Object.assign({}, s.fields), amount: s.amount, currency: s.cur, myr: fx.myr, fxKnown: fx.known, fxRate: fx.rate,
         required, status: s.status, level: s.level || null, override: !!s.override, maker: maker.id, makerName: maker.name, createdAt: created, dueAt: R.dueAt(created, s.type),
         synth: { signers: s.sigs.map((g) => ({ party: g[0], kind: g[1], js: g[2] || 3 })) } };
       if (s.screen) c.screen = Object.assign({ hit: false, reasons: [], cleared: false }, s.screen);
+      if (s.extra) Object.assign(c, s.extra); // case flags set by a module's checks, for example minLevel or mustReview
       const rows = s.sigs.map((g, i) => {
         const p = a.parties.find((x) => x.id === g[0]), h = hash(id + i), scores = {};
         a.parties.forEach((q) => { scores[q.id] = q.id === g[0] ? (g[1] === "genuine" ? 88 + (h % 11) : 18 + (h % 30)) : 14 + ((h + q.seed) % 36); });
@@ -33,6 +34,10 @@
         const verdict = rows.some((r) => !r.pass) ? "review" : distinct < required ? "mandate" : "pass";
         c.asv = { ran: true, ts: at(s.age - 0.2), threshold: 70, verdict, required, distinct, mandateMet: distinct >= required, sigs: rows, reasons: [distinct + " distinct authorised " + (distinct === 1 ? "signatory" : "signatories") + " verified; " + required + " required."] };
       }
+      if (c.asv && cfg.chop) { // a module that requires the company chop records whether it was found
+        c.asv.stamp = { required: true, found: !s.noChop };
+        if (s.noChop) { c.noChop = true; if (c.asv.verdict === "pass") c.asv.verdict = "review"; c.asv.reasons.push("The company chop (rubber stamp) was not found on the scan. A person must check the original."); }
+      }
       const ev = (h, uid, type, action, detail) => { const u = user(uid); events.push({ ts: at(h), uid, name: u.name, role: u.role, type, action, caseId: id, detail: detail || "" }); };
       ev(s.age, s.maker, "case", "Case registered", cfg.long + ", " + s.cur + " " + s.amount.toLocaleString("en-US") + ".");
       if (c.asv) ev(s.age - 0.2, s.maker, "case", "Signature verification run", rows.map((r) => r.matched.score).join(" / ") + " against pass score 70.");
@@ -43,7 +48,7 @@
       if (s.closeAgo != null) c.closedAt = at(s.closeAgo);
       if (s.closeNote) c.closeNote = s.closeNote;
       if (s.returnNote) c.returnNote = s.returnNote;
-      if (!c.level && ["pending_approval", "approved"].includes(s.status)) c.level = R.approvalLevel(c.myr, c.fxKnown, c.override, c.type);
+      if (!c.level && ["pending_approval", "approved"].includes(s.status)) c.level = R.approvalLevel(c.myr, c.fxKnown, c.override, c.type, c);
       cases.push(c);
     });
 

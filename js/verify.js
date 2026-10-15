@@ -47,11 +47,16 @@
     else if (rows.some((r) => !r.pass)) verdict = "review";
     else if (!mandateMet) verdict = "mandate";
     else verdict = "pass";
+    // a module can require the company chop (rubber stamp); a clean match without one still goes to a person
+    const stamp = o.stamp || null, noChop = !!(stamp && stamp.required && !stamp.found);
+    if (noChop && verdict === "pass") verdict = "review";
     const reasons = [];
     if (!rows.length) reasons.push("No signature was selected on the document.");
     if (duplicate) reasons.push("The same signatory appears more than once; only one signature counts.");
     reasons.push(distinct + " distinct authorised " + (distinct === 1 ? "signatory" : "signatories") + " verified; " + required + " required.");
-    return { rows, distinct, required, mandateMet, duplicate, verdict, reasons, threshold: rows.length ? rows[0].thr : thrFor(null), highRisk: rows.some((r) => r.band === "high") };
+    if (noChop) reasons.push("The company chop (rubber stamp) was not found on the scan. A person must check the original.");
+    else if (stamp && stamp.required) reasons.push("A company chop was found on the scan. ASV detects its presence only, not whether it is the right stamp.");
+    return { rows, distinct, required, mandateMet, duplicate, verdict, reasons, threshold: rows.length ? rows[0].thr : thrFor(null), highRisk: rows.some((r) => r.band === "high"), stamp: stamp ? { required: !!stamp.required, found: !!stamp.found } : null };
   }
 
   window.ASVLogic = { evaluate, VERDICT };

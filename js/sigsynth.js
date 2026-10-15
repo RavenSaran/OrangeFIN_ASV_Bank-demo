@@ -78,7 +78,8 @@
   }
 
   // spec: {seed, jitter, jseed}
-  function renderDocument(cfg, values, signers) {
+  // opts.chop: draw the company chop (a red round rubber stamp with the company's name), as on a real instruction.
+  function renderDocument(cfg, values, signers, opts) {
     const W = 900, H = 640, c = document.createElement("canvas"); c.width = W; c.height = H;
     const x = c.getContext("2d");
     x.fillStyle = "#fbfaf6"; x.fillRect(0, 0, W, H);
@@ -113,8 +114,20 @@
       x.fillStyle = "#6b7280"; x.font = "12px Arial";
       x.fillText("Authorised signatory " + (i + 1) + (n > 1 ? " of " + n : ""), sx + 4, 608);
     });
+    if (opts && opts.chop) drawChop(x, String(values.customer || "COMPANY").toUpperCase(), 760, 372);
     return c;
   }
 
-  window.SigSynth = { renderReference, renderDocument, drawSignature };
+  // A round company chop: double ring, the name split over two lines, slightly tilted and uneven like a real stamp.
+  function drawChop(x, name, cx, cy) {
+    x.save(); x.translate(cx, cy); x.rotate(-0.13); x.strokeStyle = "rgba(190,38,38,.88)"; x.fillStyle = "rgba(190,38,38,.88)";
+    x.lineWidth = 3.2; x.beginPath(); x.arc(0, 0, 44, 0, Math.PI * 2); x.stroke();
+    x.lineWidth = 1.4; x.beginPath(); x.arc(0, 0, 37, 0, Math.PI * 2); x.stroke();
+    const words = name.replace(/\./g, "").split(/\s+/), half = Math.ceil(words.length / 2), l1 = words.slice(0, half).join(" ").slice(0, 16), l2 = words.slice(half).join(" ").slice(0, 16);
+    x.font = "700 9.5px Arial"; x.textAlign = "center"; x.fillText(l1, 0, -5); x.fillText(l2 || "SDN. BHD.", 0, 8);
+    x.font = "700 7px Arial"; x.fillText("AUTHORISED", 0, -20); x.fillText("* * *", 0, 25);
+    x.restore();
+  }
+
+  window.SigSynth = { renderReference, renderDocument, drawSignature, drawChop };
 })();

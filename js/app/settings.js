@@ -19,8 +19,8 @@
       mandates: A.ACCOUNTS.filter((a) => a.mandate.rule === "any").reduce((o, a) => ((o[a.no] = { n: a.mandate.n, tierLimit: a.mandate.tier ? a.mandate.tier.limit : null, tierN: a.mandate.tier ? a.mandate.tier.n : 1 }), o), {}),
     },
     quality: { goodMin: 75, fairMin: 50, small: 25, faint: 25, edge: 30, overlap: 35, minHeight: 42, smallBelow: 40, poorForcesReview: true },
-    process: { sla: perMod((k) => A.TYPES[typeOf(k)].slaHours), noteMin: clone(R.NOTE_MIN), callbackRequired: true, sessionMinutes: A.POLICY.sessionMinutes, lockTries: 3, lockMinutes: 2, duplicateDays: 30, specimenWarnYears: 3 },
-    module: { minLeft: 5000, interestKeptPct: 50, cutoff: "15:30", screeningRule: "contains", watchlist: ["northgate metals", "volta shipping", "ashgar trading"] },
+    process: { sla: perMod((k) => A.TYPES[typeOf(k)].slaHours), noteMin: clone(R.NOTE_MIN), callbackRequired: true, sessionMinutes: A.POLICY.sessionMinutes, lockTries: 3, lockMinutes: 2, duplicateDays: 30, specimenWarnYears: 3, chopCheck: true },
+    module: { minLeft: 5000, interestKeptPct: 50, resolutionMaxDays: 90, ttDailyLimit: 500000, cashReportFrom: 50000, cutoff: "15:30", screeningRule: "contains", watchlist: ["northgate metals", "volta shipping", "ashgar trading"] },
   };
   const ORIG = { flows: clone(A.FLOWS), guides: clone(A.GUIDES), mandates: A.ACCOUNTS.map((a) => ({ no: a.no, mandate: clone(a.mandate) })) };
 
@@ -62,6 +62,9 @@
     Object.keys(p.noteMin).forEach((k) => { if (!int(p.noteMin[k]) || !between(p.noteMin[k], 0, 200)) e.push("Minimum note length for " + k.replace(/_/g, " ") + " must be 0 to 200 characters."); });
     if (!int(p.sessionMinutes) || !between(p.sessionMinutes, 1, 120)) e.push("Idle sign-out must be 1 to 120 minutes."); if (!int(p.lockTries) || !between(p.lockTries, 1, 10)) e.push("Failed sign-in attempts must be 1 to 10."); if (!int(p.lockMinutes) || !between(p.lockMinutes, 1, 120)) e.push("Lock time must be 1 to 120 minutes.");
     if (!int(p.duplicateDays) || !between(p.duplicateDays, 1, 365)) e.push("Duplicate payment window must be 1 to 365 days."); if (!int(p.specimenWarnYears) || !between(p.specimenWarnYears, 0, 20)) e.push("Specimen age warning must be 0 to 20 years (0 is off).");
+    if (typeof p.chopCheck !== "boolean") e.push("Choose whether the company chop is checked.");
+    if (!int(m.resolutionMaxDays) || !between(m.resolutionMaxDays, 1, 365)) e.push("Board resolution maximum age must be 1 to 365 days.");
+    if (!between(m.ttDailyLimit, 1, 1e12)) e.push("Telegraphic transfer daily limit must be above zero."); if (!between(m.cashReportFrom, 0, 1e12)) e.push("Cash reporting threshold must be 0 or more.");
     if (!between(m.minLeft, 0, 1e12)) e.push("Fixed deposit minimum balance must be 0 or more."); if (!between(m.interestKeptPct, 0, 100)) e.push("Share of interest kept must be 0 to 100 percent.");
     if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(m.cutoff)) e.push("Cut-off must be a time such as 15:30."); if (!["contains", "exact"].includes(m.screeningRule)) e.push("Choose a screening match rule.");
     if (!Array.isArray(m.watchlist) || m.watchlist.some((w) => !String(w).trim())) e.push("The watchlist cannot contain blank lines.");
@@ -112,6 +115,8 @@
       return p;
     },
     modOf(c) { return A.TYPES[c.type].module; },
+    // The company chop is checked for a module that requires it (its type says chop: true), while the bank-wide switch is on.
+    chopRequired(type) { return !!(A.TYPES[type] && A.TYPES[type].chop) && !!Cfg.settings.process.chopCheck; },
     asvNotRequired(type, myr, known) { const f = Cfg.settings.amount.asvFrom[A.TYPES[type].module]; return f > 0 && !!known && myr < f; },
     highValueReview(c) { const f = Cfg.settings.amount.reviewFrom[Cfg.modOf(c)]; return f != null && (c.myr == null || c.myr >= f); },
     secondAnalyst(c) { const f = Cfg.settings.amount.secondFrom[Cfg.modOf(c)]; return (f != null && (c.myr == null || c.myr >= f)) || (!!c.highRisk && Cfg.settings.score.highRiskNeedsSecond); },

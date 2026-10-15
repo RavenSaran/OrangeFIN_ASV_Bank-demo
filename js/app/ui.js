@@ -48,7 +48,7 @@
         if (Sig.has(p)) return { src: s.kind === "genuine" ? Sig.genuine(p, s.js) : Sig.forged(p, s.js) };
         return s.kind === "genuine" ? { seed: p.seed, jitter: 0.12, jseed: s.js } : { seed: p.seed + 500, jitter: 0.06, jseed: s.js };
       });
-      return (cache["d" + c.id] = SigSynth.renderDocument({ formTitle: t.long, formCode: t.form, fields }, vals, signers).toDataURL("image/png"));
+      return (cache["d" + c.id] = SigSynth.renderDocument({ formTitle: t.long, formCode: t.form, fields }, vals, signers, { chop: !!t.chop && !c.noChop }).toDataURL("image/png"));
     },
     // Ink only: light paper becomes transparent so a signature sits cleanly on the specimen card.
     ink(canvas) {

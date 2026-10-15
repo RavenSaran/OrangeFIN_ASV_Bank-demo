@@ -43,5 +43,14 @@
       trail: [[0.3, "RO-1042", "Submitted for approval", "Level 2 authority required (Branch Manager)."], [2, "BM-4001", "Returned for correction", "Beneficiary bank name does not match the BIC. Confirm with the customer."]],
       returnNote: "Beneficiary bank name does not match the BIC. Confirm with the customer." },
     { type: "tt", acct: "7010-2201-7743", amount: 75000, cur: "USD", status: "asv_mandate", maker: "RO-1057", age: 0.6, screen: OK, fields: f("Hanoi Circuit Boards", "Vietcombank", "BFTVVNVX", "Other", "Trade payment", "Circuit boards"), sigs: [G("p1", 5)] },
+    // over the counter: a daily limit exceeded, a high-risk destination, and cash handed over at the counter
+    { type: "tt", acct: "7002-8891-4402", amount: 120000, cur: "USD", status: "fraud_review", maker: "RO-1042", age: 2.5, screen: OK, fields: Object.assign(f("Pacific Parts Co. Ltd", "DBS Singapore", "DBSSSGSG", "Singapore", "Trade payment", "Large spare parts order"), { cash: "" }), sigs: [G("p1", 4), G("p2", 9)],
+      extra: { dailyLimit: { limit: 500000, before: 0, total: 534000, exceeded: true }, minLevel: 2, mustReview: "the account's daily limit of MYR 500,000 is exceeded (MYR 534,000 today with this transfer).", reviewReason: "enhanced" },
+      trail: [[0.4, "RO-1042", "Referred for enhanced review", "Likely match, but the account's daily limit of MYR 500,000 is exceeded (MYR 534,000 today with this transfer). An analyst confirms by callback before approval."]] },
+    { type: "tt", acct: "7010-2201-7743", amount: 25000, cur: "USD", status: "asv_pass", maker: "RO-1057", age: 1.4, screen: { hit: true, reasons: ["Destination is a high-risk jurisdiction: enhanced AML/CFT due diligence applies"] }, fields: Object.assign(f("Yangon Textile Trading Co", "KBZ Bank", "KBZBMMMY", "Myanmar", "Trade payment", "Cotton fabric"), { cash: "" }), sigs: [G("p1", 5), G("p3", 8)],
+      extra: { dailyLimit: { limit: 500000, before: 0, total: 111250, exceeded: false } } },
+    { type: "tt", acct: "8004-7781-2290", amount: 30000, cur: "USD", status: "approved", maker: "RO-1042", age: 14, level: 1, screen: OK, fields: Object.assign(f("Osaka Components KK", "Mizuho Bank", "MHCBJPJT", "Japan", "Trade payment", "Electronic components"), { cash: "80000" }), sigs: [G("p1", 3), G("p2", 8)],
+      extra: { dailyLimit: { limit: 500000, before: 0, total: 133500, exceeded: false }, cash: 80000, cashReport: true },
+      trail: [[0.3, "RO-1042", "Submitted for approval", "Level 1 authority required (Senior Operations Officer)."], [1.5, "SO-2011", "Approved and released", "Cash transaction report filed."]], approved: ["SO-2011", 12, "Cash transaction report filed."] },
   ]);
 })();

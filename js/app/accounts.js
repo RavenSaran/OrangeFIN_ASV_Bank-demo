@@ -4,6 +4,7 @@
   window.APP.ACCOUNTS = [
     {
       no: "8001-2345-6789",
+      tradeFacility: { limit: 5000000, used: 1200000 },
       name: "ABC Sdn. Bhd.",
       kind: "current",
       status: "Active",
@@ -33,6 +34,7 @@
     },
     {
       no: "8004-7781-2290",
+      tradeFacility: { limit: 8000000, used: 7350000 },
       name: "Mega Build Sdn. Bhd.",
       kind: "current",
       status: "Active",
@@ -56,6 +58,7 @@
     },
     {
       no: "8005-9930-1178",
+      tradeFacility: { limit: 3000000, used: 400000 },
       name: "Eastern Foods Bhd.",
       kind: "current",
       status: "Active",
@@ -72,6 +75,7 @@
     },
     {
       no: "7002-8891-4402",
+      tradeFacility: { limit: 10000000, used: 2000000 },
       name: "Borneo Marine Supplies Sdn. Bhd.",
       kind: "current",
       status: "Active",
@@ -101,6 +105,7 @@
     },
     {
       no: "7010-2201-7743",
+      tradeFacility: { limit: 2000000, used: 1900000 },
       name: "Straits Electronics Sdn. Bhd.",
       kind: "current",
       status: "Active",
