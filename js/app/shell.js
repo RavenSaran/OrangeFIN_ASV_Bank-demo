@@ -66,7 +66,7 @@
       }
       setModule(key, opts.tab || null, user);
       // signature images are decoded once, then every page can draw them without waiting
-      const go = () => render(user, view, key);
+      const go = () => { render(user, view, key); if (window.UX) UX.mount(user); };
       if (window.Sig) Sig.ready().then(go); else go();
     },
     setModule(key, tab) { setModule(key, tab, Auth.current()); },

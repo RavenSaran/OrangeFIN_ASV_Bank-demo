@@ -52,7 +52,9 @@
     DB.ensureSeeded();
     if (Auth.current()) { location.replace("dashboard.html"); return; }
 
-    document.getElementById("spec").src = window.REALSIG.people.amera.spec[0];
+    var rp = window.REALSIG && window.REALSIG.people && window.REALSIG.people.amera;
+    if (rp) document.getElementById("spec").src = rp.spec[0];
+    else { var c = document.createElement("canvas"); c.width = 440; c.height = 220; var x = c.getContext("2d"); x.fillStyle = "#1b2f7a"; SigSynth.drawSignature(x, 11, 0, 1, 40, 40, 1); document.getElementById("spec").src = c.toDataURL("image/png"); }
     document.getElementById("pwshow").textContent = A.PASSWORD;
     document.getElementById("mods").innerHTML = Object.keys(A.MODULES).map(function (k) { var m = A.MODULES[k]; return '<li><span class="mod" style="--m:' + m.accent[0] + '">' + esc(m.name) + "</span></li>"; }).join("");
 

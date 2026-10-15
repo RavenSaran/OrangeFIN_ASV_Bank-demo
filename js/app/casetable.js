@@ -37,12 +37,12 @@
     const rows = cases.map((c) => {
       const owner = Rules.STATUS[c.status].owner;
       return '<tr class="click" tabindex="0" data-id="' + esc(c.id) + '"><td class="id">' + esc(c.id) + "</td><td>" + UI.modTag(c.type) + '<span class="sub">' + esc(c.customer) + "</span></td>" +
-        '<td class="r nowrap">' + esc(UI.money(c.amount, c.currency)) + (c.currency !== "MYR" && c.myr != null ? '<span class="sub">MYR ' + Math.round(c.myr).toLocaleString("en-US") + "</span>" : c.myr == null ? '<span class="sub">No FX rate</span>' : "") + "</td>" +
+        '<td class="r nowrap" data-s="' + (c.myr == null ? -1 : Math.round(c.myr)) + '">' + esc(UI.money(c.amount, c.currency)) + (c.currency !== "MYR" && c.myr != null ? '<span class="sub">MYR ' + Math.round(c.myr).toLocaleString("en-US") + "</span>" : c.myr == null ? '<span class="sub">No FX rate</span>' : "") + "</td>" +
         "<td>" + UI.level(c) + "</td><td>" + UI.status(c.status) + (owner && opts.owner ? '<span class="sub">With ' + esc(owner.toLowerCase()) + "</span>" : "") + "</td>" +
         (opts.user ? '<td><b>' + esc(UI.nextAction(opts.user, c)) + "</b></td>" : "") +
-        "<td>" + UI.sla(c) + '</td><td class="nowrap muted">' + esc(opts.when === "ago" ? UI.ago(c.createdAt) : UI.dt(c.createdAt)) + "</td></tr>";
+        '<td data-s="' + Date.parse(c.dueAt) + '">' + UI.sla(c) + '</td><td class="nowrap muted" data-s="' + Date.parse(c.createdAt) + '">' + esc(opts.when === "ago" ? UI.ago(c.createdAt) : UI.dt(c.createdAt)) + "</td></tr>";
     }).join("");
-    return '<div class="tablewrap"><table class="grid"><thead><tr><th>Case</th><th>Instruction</th><th class="r">Amount</th><th>Level</th><th>Status</th>' + (opts.user ? "<th>What to do</th>" : "") + "<th>Service time</th><th>Registered</th></tr></thead><tbody>" + rows + "</tbody></table></div>";
+    return '<div class="tablewrap" data-ux-t="1"><table class="grid"><thead><tr><th>Case</th><th>Instruction</th><th class="r">Amount</th><th>Level</th><th>Status</th>' + (opts.user ? "<th>What to do</th>" : "") + "<th>Service time</th><th>Registered</th></tr></thead><tbody>" + rows + "</tbody></table></div>";
   };
   UI.bindRows = function (root) {
     const go = (tr) => { if (tr) location.href = "case.html?id=" + encodeURIComponent(tr.dataset.id); };

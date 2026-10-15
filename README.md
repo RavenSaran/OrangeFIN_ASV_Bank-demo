@@ -1,4 +1,4 @@
-# OrangeFIN signature verification
+﻿# OrangeFIN signature verification
 
 One system for the whole company. Staff sign in once and work in the modules their role covers. Each module is a use case of Automated Signature Verification (ASV).
 
@@ -45,6 +45,21 @@ Nobody approves a case they registered or cleared. Module access is enforced in 
 
 Each change needs a written reason, is checked before saving (for example, high risk must be below the pass score), and is written to the audit trail with the old and new value. Each page can be reset to the shipped values. The Policy page shows the values in force.
 
+## Working faster (every role)
+
+| Feature | How |
+|---|---|
+| Search and jump | `Ctrl K` or `/` (or click the search box): cases, customers, accounts, pages, and actions such as "Start the next case" |
+| Next up | Home opens with the case due first and a Start button. `N` opens it from any page |
+| Notification bell | Top right: cases that are overdue or due within the hour, each one click away |
+| Signature viewer | Click any signature or scan to enlarge it. On a verification sheet, switch between Side by side and Overlay (submitted in blue over the specimen in red) with zoom and blend controls |
+| Sortable lists | Click a heading to sort. Compact rows and Export CSV are above every case list (exports are written to the audit trail) |
+| Drop a scan | On Register, drag a PNG or JPG anywhere on the page, or paste a screenshot |
+| Role guide | Home shows a three-step guide for the signed-in role. Hide it with "Got it" |
+| Shortcuts | `?` lists them: `G` then `H` Home, `W` My work, `C` All cases, `S` Specimen register |
+
+The next-step panel on a case stays in view while you scroll. Code: `js/app/ux.js`, `js/app/ux-viewer.js`, `css/ux.css`.
+
 ## How to explain it
 
 1. Sign in as `BM-4001`. **Home** shows one tile per module with your queue counts, your next few cases, and **My work** in the menu for everything waiting for you across modules. Click a tile to enter a module.
@@ -71,3 +86,4 @@ Each change needs a written reason, is checked before saving (for example, high 
 | `archive-v1`, `archive-v2-combined`, `archive-v3-separate` | Earlier versions, kept as they were |
 
 To change a module's wording, limits or checks, edit its file in `js/app/modules/`. To change who works where, edit `js/app/data.js`.
+
